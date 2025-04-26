@@ -21,14 +21,6 @@ module.exports = {
       sub_total: {
         type: Sequelize.DOUBLE
       },
-      createdAt: {
-        allowNull: false,
-        type: Sequelize.DATE
-      },
-      updatedAt: {
-        allowNull: false,
-        type: Sequelize.DATE
-      }
     });
   },
   async down(queryInterface, Sequelize) {
