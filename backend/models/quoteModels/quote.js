@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   Quote.init({
-    quote_no: {
+    id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
@@ -34,6 +34,39 @@ module.exports = (sequelize, DataTypes) => {
     sub_total: {
       type: DataTypes.DOUBLE,
       allowNull: false,
+    },
+    material:{
+      type: DataTypes.STRING,
+    },
+    product_type:{
+      type: DataTypes.STRING,
+    },
+    CL:{
+      type: DataTypes.STRING,
+    },
+    unit:{
+      type: DataTypes.INTEGER,
+    },
+    width:{
+      type: DataTypes.DOUBLE,
+    },
+    height:{
+      type: DataTypes.DOUBLE,
+    },
+    at:{
+      type: DataTypes.INTEGER,
+    },
+    GL:{
+      type: DataTypes.STRING,
+    },
+    GRD:{
+      type: DataTypes.BOOLEAN,
+    },
+    SC:{
+      type: DataTypes.STRING,
+    },
+    status:{
+      type:DataTypes.STRING,
     },
   }, {
     sequelize,

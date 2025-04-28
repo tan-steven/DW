@@ -16,20 +16,29 @@ if (config.use_env_variable) {
   sequelize = new Sequelize(config.database, config.username, config.password, config);
 }
 
-fs
-  .readdirSync(__dirname)
-  .filter(file => {
-    return (
+const walkSync = function(dir, filelist = []) {
+  const files = fs.readdirSync(dir);
+  files.forEach(file => {
+    const filepath = path.join(dir, file);
+    if (fs.statSync(filepath).isDirectory()) {
+      filelist = walkSync(filepath, filelist);
+    } else if (
       file.indexOf('.') !== 0 &&
-      file !== basename &&
       file.slice(-3) === '.js' &&
       file.indexOf('.test.js') === -1
-    );
-  })
-  .forEach(file => {
-    const model = require(path.join(__dirname, file))(sequelize, Sequelize.DataTypes);
-    db[model.name] = model;
+    ) {
+      filelist.push(filepath);
+    }
   });
+  return filelist;
+};
+
+walkSync(__dirname).forEach(file => {
+  if (file !== __filename) { // ignore index.js itself
+    const model = require(file)(sequelize, Sequelize.DataTypes);
+    db[model.name] = model;
+  }
+});
 
 Object.keys(db).forEach(modelName => {
   if (db[modelName].associate) {

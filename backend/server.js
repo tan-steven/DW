@@ -10,8 +10,10 @@ app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 
 //controllers
-const quotesController = require('./controllers/quote_controller');
-app.use('/api/quotes', quotesController);
+const getQuote = require('./controllers/quoteController/getQuote');
+const createQuote = require('./controllers/quoteController/createQuote');
+app.use('/api/quotes', getQuote);
+app.use('/api/quotes', createQuote);
 
 const port = process.env.PORT || 4000;
 app.listen(port, ()=>{
