@@ -41,11 +41,11 @@ const CreateQuote = ({ onQuoteCreated }) => {
 
   const handleSubmit = async () => {
     try {
-      await axios.post("http://localhost:4005/api/createQuotes", formData);
+      await axios.post("http://localhost:4005/api/quotes", formData);
       onQuoteCreated();
       setOpen(false);
     } catch (err) {
-      console.log("Error creating quote", err);
+      console.log("Error creating quote from frontend", err);
     }
   };
 

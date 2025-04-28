@@ -5,6 +5,7 @@ const { Quote } = db;
 createQuote.post('/', async (req, res) => {
   try {
     const newQuote = await Quote.create(req.body);
+    console.log(req.body);
     res.status(201).json(newQuote);
   } catch (err) {
     console.error(err);
