@@ -21,39 +21,6 @@ module.exports = {
       sub_total: {
         type: Sequelize.DOUBLE
       },
-      material:{
-        type: Sequelize.STRING,
-      },
-      product_type:{
-        type: Sequelize.STRING,
-      },
-      CL:{
-        type: Sequelize.STRING,
-      },
-      unit:{
-        type: Sequelize.INTEGER,
-      },
-      width:{
-        type: Sequelize.DOUBLE,
-      },
-      height:{
-        type: Sequelize.DOUBLE,
-      },
-      at:{
-        type: Sequelize.INTEGER,
-      },
-      GL:{
-        type: Sequelize.STRING,
-      },
-      GRD:{
-        type: Sequelize.BOOLEAN,
-      },
-      SC:{
-        type: Sequelize.STRING,
-      },
-      status:{
-        type:Sequelize.STRING,
-      },
     });
   },
   async down(queryInterface, Sequelize) {

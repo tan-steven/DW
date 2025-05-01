@@ -6,13 +6,23 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 import CreateQuote from "./createQuote";
+import QuoteDetails from "./quoteDetails"; // adjust the path as needed
+import { Button } from "@mui/material";
+
+
 
 const Quotes = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
 
   const [quotes, setQuotes] = useState([]);
+  const [selectedQuoteId, setSelectedQuoteId] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
+  const handleOpenModal = (id) => {
+    setSelectedQuoteId(id);
+    setModalOpen(true);
+  };
   useEffect(() =>{
     const fetchQuotes = async () =>{
       try{
@@ -58,7 +68,20 @@ const Quotes = () => {
         </Typography>
       ),
     },
-
+    {
+      field: "actions",
+      headerName: "Actions",
+      flex: 1,
+      renderCell: (params) => (
+        <Button
+          variant="outlined"
+          size="small"
+          onClick={() => handleOpenModal(params.row.id)}
+        >
+          View Details
+        </Button>
+      ),
+    }
   ];
 
   return (
@@ -97,6 +120,11 @@ const Quotes = () => {
           <CreateQuote onQuoteCreated={() => window.location.reload()} />
         </Box>
         <DataGrid checkboxSelection rows={quotes} columns={columns} />
+        <QuoteDetails
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          quoteId={selectedQuoteId}
+        />
       </Box>
     </Box>
   );

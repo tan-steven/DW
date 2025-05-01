@@ -35,39 +35,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DOUBLE,
       allowNull: false,
     },
-    material:{
-      type: DataTypes.STRING,
-    },
-    product_type:{
-      type: DataTypes.STRING,
-    },
-    CL:{
-      type: DataTypes.STRING,
-    },
-    unit:{
-      type: DataTypes.INTEGER,
-    },
-    width:{
-      type: DataTypes.DOUBLE,
-    },
-    height:{
-      type: DataTypes.DOUBLE,
-    },
-    at:{
-      type: DataTypes.INTEGER,
-    },
-    GL:{
-      type: DataTypes.STRING,
-    },
-    GRD:{
-      type: DataTypes.BOOLEAN,
-    },
-    SC:{
-      type: DataTypes.STRING,
-    },
-    status:{
-      type:DataTypes.STRING,
-    },
   }, {
     sequelize,
     modelName: 'Quote',
