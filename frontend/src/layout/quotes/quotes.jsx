@@ -26,7 +26,7 @@ const Quotes = () => {
   useEffect(() =>{
     const fetchQuotes = async () =>{
       try{
-        const response = await axios.get("http://localhost:4005/api/quotes");
+        const response = await axios.get("/api/quotes");
         setQuotes(response.data);
       } catch (err) {
         console.log("Error fetching quote from frontend", err);

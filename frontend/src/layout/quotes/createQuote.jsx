@@ -76,7 +76,7 @@ const CreateQuote = ({ onQuoteCreated }) => {
 
   const handleSubmit = async () => {
     try {
-      await axios.post("http://localhost:4005/api/quotes", formData);
+      await axios.post("/api/quotes", formData);
       onQuoteCreated();
       setOpen(false);
     } catch (err) {

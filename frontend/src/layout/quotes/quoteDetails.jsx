@@ -16,7 +16,7 @@ const quoteDetails = ({ open, onClose, quoteId }) => {
 
   useEffect(() => {
     if (quoteId && open) {
-      axios.get(`http://localhost:4005/api/quoteDetails/${quoteId}`)
+      axios.get(`/api/quoteDetails/${quoteId}`)
         .then(res => setDetails(res.data))
         .catch(err => console.error("Error fetching quote details", err));
     }
