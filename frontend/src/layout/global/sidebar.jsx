@@ -96,7 +96,7 @@ const Sidebar = () => {
                   alt="LOGO"
                   width="100px"
                   height="100px"
-                  src={``}
+                  src={`../../assets/diamond-windows-logo.jpg`}
                   style={{ cursor: "pointer", borderRadius: "50%" }}
                 />
               </Box>
@@ -151,8 +151,8 @@ const Sidebar = () => {
               setSelected={setSelected}
             />
             <Item
-              title="Invoice"
-              to="/Invoice"
+              title="Invoices"
+              to="/Invoices"
               icon={<ReceiptOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}

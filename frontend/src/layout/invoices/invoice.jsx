@@ -5,56 +5,35 @@ import Header from "../../components/header";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-import CreateQuote from "./createQuote";
-import QuoteDetails from "./quoteDetails"; // adjust the path as needed
 import { Button } from "@mui/material";
 
-
-
-const Quotes = () => {
+const Invoices = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
 
-  const [quotes, setQuotes] = useState([]);
-  const [selectedQuoteId, setSelectedQuoteId] = useState(null);
+  const [invoices, setInvoices] = useState([]);
+  const [selectedInvoiceId, setSelectedInvoiceId] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
 
   const handleOpenModal = (id) => {
-    setSelectedQuoteId(id);
+    setSelectedInvoiceId(id);
     setModalOpen(true);
   };
 
-  const [selectedQuoteIds, setSelectedQuoteIds] = useState([]);
-
-  const handleSubmitAsInvoice = async () => {
-    console.log("Submitting quote IDs:", selectedQuoteIds);
-    try {
-      for (const id of selectedQuoteIds) {
-        await axios.post(`/api/quotes/${id}/submit-as-invoice`);
-      }
-      alert("Submitted successfully");
-      window.location.reload();
-    } catch (err) {
-      console.error("Failed to submit quotes as invoices", err);
-      alert("Something went wrong");
-    }
-  };
-  
-
-  useEffect(() =>{
-    const fetchQuotes = async () =>{
-      try{
-        const response = await axios.get("/api/quotes");
-        setQuotes(response.data);
+  useEffect(() => {
+    const fetchInvoices = async () => {
+      try {
+        const response = await axios.get("/api/invoices");
+        setInvoices(response.data);
       } catch (err) {
-        console.log("Error fetching quote from frontend", err);
+        console.log("Error fetching invoice from frontend", err);
       }
     };
-    fetchQuotes();
+    fetchInvoices();
   }, []);
 
   const columns = [
-    { field: "id", headerName: "quote_no" },
+    { field: "id", headerName: "invoice_no" },
     {
       field: "date",
       headerName: "date",
@@ -99,12 +78,12 @@ const Quotes = () => {
           View Details
         </Button>
       ),
-    }
+    },
   ];
 
   return (
     <Box m="20px">
-      <Header title="Quotes" subtitle="List of Quotes" />
+      <Header title="Invoices" subtitle="List of Invoices" />
       <Box
         m="40px 0 0 0"
         height="75vh"
@@ -134,36 +113,10 @@ const Quotes = () => {
           },
         }}
       >
-        <Box display="flex" justifyContent="space-between" mb={2}>
-          <CreateQuote onQuoteCreated={() => window.location.reload()} />
-          <Button
-            variant="contained"
-            color="success"
-            disabled={selectedQuoteIds.length === 0}
-            onClick={handleSubmitAsInvoice}
-          >
-            Submit as Invoice
-          </Button>
-        </Box>
-        <DataGrid
-          checkboxSelection
-          rows={quotes}
-          columns={columns}
-          getRowId={(row) => row.id}
-          onRowSelectionModelChange={({ ids }) => {
-            const arrayOfIds = Array.from(ids); // turn Set into a plain array
-            console.log("Selected quote IDs:", arrayOfIds);
-            setSelectedQuoteIds(arrayOfIds); // store as array
-          }}
-        />
-        <QuoteDetails
-          open={modalOpen}
-          onClose={() => setModalOpen(false)}
-          quoteId={selectedQuoteId}
-        />
+        <DataGrid checkboxSelection rows={invoices} columns={columns} />
       </Box>
     </Box>
   );
 };
 
-export default Quotes;
+export default Invoices;
