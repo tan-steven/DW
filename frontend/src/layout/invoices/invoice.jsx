@@ -4,6 +4,7 @@ import { tokens } from "../../theme";
 import Header from "../../components/header";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import InvoiceDetails from "./invoiceDetails";
 
 import { Button } from "@mui/material";
 
@@ -115,6 +116,11 @@ const Invoices = () => {
       >
         <DataGrid checkboxSelection rows={invoices} columns={columns} />
       </Box>
+      <InvoiceDetails
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        invoiceId={selectedInvoiceId}
+      />
     </Box>
   );
 };

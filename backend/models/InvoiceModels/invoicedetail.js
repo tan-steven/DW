@@ -28,7 +28,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'InvoiceDetail',
-    tableName: 'invoice_details',
+    tableName: 'invoiceDetails',
     timestamps: false
   });
   return InvoiceDetail;
