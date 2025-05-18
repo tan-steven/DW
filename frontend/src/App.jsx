@@ -7,6 +7,7 @@ import Sidebar from "./layout/global/sidebar";
 import Dashboard from './layout/dashboard';
 import Quotes from './layout/quotes/quotes';
 import Invoices from './layout/invoices/invoice';
+import Orders from './layout/orders/order';
 
 const App = () => {
   const [theme, colorMode] = useMode();
@@ -21,6 +22,7 @@ const App = () => {
             <Routes>
               <Route path='/' element={<Dashboard />} />
               <Route path='/quotes' element={<Quotes />} />
+              <Route path='/orders' element={<Orders />}/>
               <Route path='/invoices' element={<Invoices />}/>
             </Routes>
           </main>

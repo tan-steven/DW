@@ -26,19 +26,20 @@ const Quotes = () => {
 
   const [selectedQuoteIds, setSelectedQuoteIds] = useState([]);
 
-  const handleSubmitAsInvoice = async () => {
-    console.log("Submitting quote IDs:", selectedQuoteIds);
+  const handleSubmitAsOrder = async () => {
+    console.log("Submitting quote IDs as orders:", selectedQuoteIds);
     try {
       for (const id of selectedQuoteIds) {
-        await axios.post(`/api/quotes/${id}/submit-as-invoice`);
+        await axios.post(`/api/quotes/${id}/submit-as-order`);
       }
-      alert("Submitted successfully");
+      alert("Submitted to orders successfully");
       window.location.reload();
     } catch (err) {
-      console.error("Failed to submit quotes as invoices", err);
+      console.error("Failed to submit quotes as orders", err);
       alert("Something went wrong");
     }
   };
+
   
 
   useEffect(() =>{
@@ -140,9 +141,9 @@ const Quotes = () => {
             variant="contained"
             color="success"
             disabled={selectedQuoteIds.length === 0}
-            onClick={handleSubmitAsInvoice}
+            onClick={handleSubmitAsOrder}
           >
-            Submit as Invoice
+            Submit as Order
           </Button>
         </Box>
         <DataGrid
