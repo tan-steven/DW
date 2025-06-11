@@ -1,23 +1,53 @@
-const express = require("express");
-const router = express.Router();
-const db = require("../../models");
-const { Quote, QuoteDetails } = db;
+const { encodeQuoteNumber } = require("../../utils/quoteNum");
+const db = require('../../models');
+const { Quote, QuoteDetails, Customer } = db; // import Customer model
+const router = require('express').Router();
 
 router.post("/", async (req, res) => {
   const t = await db.sequelize.transaction();
   try {
-    const { quoteDetails, ...quoteData } = req.body;
+    const { quoteDetails, customer, status, ...quoteData } = req.body;
 
-    // Step 1: Create the quote
-    const newQuote = await Quote.create(quoteData, { transaction: t });
+    // Step 1: Get the customer's latest major and minor numbers
+    const previousQuote = await Quote.findOne({
+      where: { customer: customer.toString() },
+      order: [["quote_no", "DESC"]],
+      transaction: t
+    });
 
-    // Step 2: Attach quote_id to each quoteDetail
+    let major = 1, minor = 0;
+
+    if (previousQuote) {
+      const prevQuoteNo = parseInt(previousQuote.quote_no);
+      const prevStatus = (prevQuoteNo >> 23) & 0b11;
+      const prevMajor = (prevQuoteNo >> 8) & 0x7FFF;
+      const prevMinor = prevQuoteNo & 0xFF;
+
+      if (prevStatus === status && prevMajor === major) {
+        minor = prevMinor + 1;
+      } else {
+        major = prevMajor + 1;
+      }
+    }
+
+    const quote_no = encodeQuoteNumber(parseInt(customer), status, major, minor);
+
+    // Step 2: Create the quote
+    // Ensure `id` is not included to prevent null insertion
+    const { id, ...safeQuoteData } = quoteData;
+
+    const newQuote = await Quote.create(
+      { ...safeQuoteData, quote_no, customer, status },
+      { transaction: t }
+    );
+
+
+    // Step 3: Add quoteDetails
     const detailsWithQuoteId = quoteDetails.map(detail => ({
       ...detail,
-      quote_id: newQuote.id, // assuming primary key is 'id'
+      quote_id: newQuote.id,
     }));
 
-    // Step 3: Bulk insert quote details
     await QuoteDetails.bulkCreate(detailsWithQuoteId, { transaction: t });
 
     await t.commit();

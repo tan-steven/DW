@@ -1,28 +1,33 @@
 const quote_detail = require('express').Router();
 const db = require('../../models');
-const { QuoteDetails } = db;
+const { QuoteDetails, Quote } = db;
+
+// Add this association in your models initialization:
+// In your Quote model:
+// Quote.hasMany(QuoteDetails, { foreignKey: 'quote_id', as: 'quoteDetails' });
 
 quote_detail.post('/', async (req, res) => {
   try {
     const newDetail = await QuoteDetails.create(req.body);
-    console.log(req.body);
     res.status(201).json(newDetail);
   } catch (err) {
     console.error(err);
-    res.status(500).send("Failed to create quote");
+    res.status(500).send("Failed to create quote detail");
   }
 });
 
 quote_detail.get('/:quote_id', async (req, res) => {
   try {
     const { quote_id } = req.params;
-    const details = await db.QuoteDetails.findAll({ where: { quote_id } });
+    const details = await QuoteDetails.findAll({ 
+      where: { quote_id },
+      order: [['id', 'ASC']]
+    });
     res.json(details);
   } catch (err) {
     console.error("Error fetching quote details:", err);
     res.status(500).send("Failed to fetch quote details");
   }
 });
-
 
 module.exports = quote_detail;

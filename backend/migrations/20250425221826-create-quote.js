@@ -5,9 +5,12 @@ module.exports = {
     await queryInterface.createTable('quotes', {
       id: {
         allowNull: false,
-        autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.BIGINT,
+        autoIncrement:true,
+      },
+      quote_no:{
+        type: Sequelize.BIGINT,
       },
       date: {
         type: Sequelize.DATE

@@ -18,6 +18,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
+      allowNull: false,
+    },
+    quote_no:{
+      type: DataTypes.INTEGER,
     },
     date: {
       type: DataTypes.DATE,

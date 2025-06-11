@@ -10,7 +10,7 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       quote_no: {
-        type: Sequelize.STRING
+        type: Sequelize.BIGINT
       },
       date: {
         type: Sequelize.DATE

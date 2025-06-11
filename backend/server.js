@@ -20,7 +20,9 @@ const getOrders = require("./controllers/orderController/getOrder");
 const getDetails = require("./controllers/orderController/getDetails");
 const submitOrder = require('./controllers/quoteController/submitOrder');
 const submitOrderAsInvoice = require('./controllers/orderController/submitOrderAsInvoice');
+const customerRoute = require('./controllers/customerController/customers');
 
+app.use('/api/customers', customerRoute);
 app.use('/api/orders', submitOrderAsInvoice);
 app.use('/api/quotes', getQuote);
 app.use('/api/quotes', createQuote);

@@ -1,15 +1,14 @@
-import { Box, Typography, useTheme } from "@mui/material";
+import { Box, Typography, useTheme, Button } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
 import Header from "../../components/header";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import axios from "axios";
-
+import ReactToPrint from "react-to-print";
+import PrintQuote from './printQuote';
 import CreateQuote from "./createQuote";
-import QuoteDetails from "./quoteDetails"; // adjust the path as needed
-import { Button } from "@mui/material";
-
-
+import QuoteDetails from "./quoteDetails";
+import { formatQuoteNumber } from "../../utils/quoteNum";
 
 const Quotes = () => {
   const theme = useTheme();
@@ -18,33 +17,50 @@ const Quotes = () => {
   const [quotes, setQuotes] = useState([]);
   const [selectedQuoteId, setSelectedQuoteId] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [selectedQuoteIds, setSelectedQuoteIds] = useState([]);
+  const [printQuote, setPrintQuote] = useState(null);
+  const printRef = useRef();
 
-  const handleOpenModal = (id) => {
-    setSelectedQuoteId(id);
+  const handleOpenModal = (quote_no) => {
+    setSelectedQuoteId(quote_no);
     setModalOpen(true);
   };
 
-  const [selectedQuoteIds, setSelectedQuoteIds] = useState([]);
-
   const handleSubmitAsOrder = async () => {
-    console.log("Submitting quote IDs as orders:", selectedQuoteIds);
+    if (!Array.isArray(selectedQuoteIds) || selectedQuoteIds.length === 0) return;
+
     try {
-      for (const id of selectedQuoteIds) {
-        await axios.post(`/api/quotes/${id}/submit-as-order`);
+      for (const quote_no of selectedQuoteIds) {
+        await axios.post(`/api/quotes/${quote_no}/submit-as-order`);
       }
       alert("Submitted to orders successfully");
       window.location.reload();
     } catch (err) {
-      console.error("Failed to submit quotes as orders", err);
+      console.error("Failed to submit quotes as orders", err?.response?.data || err);
       alert("Something went wrong");
     }
   };
 
-  
+  const handlePrint = async () => {
+    if (selectedQuoteIds.length !== 1) {
+      alert("Please select exactly one quote to print.");
+      return;
+    }
 
-  useEffect(() =>{
-    const fetchQuotes = async () =>{
-      try{
+    try {
+      const quote_no = selectedQuoteIds[0];
+      console.log(quote_no)
+      const response = await axios.get(`/api/quotes/by-quote-no/${quote_no}`);
+      setPrintQuote(response.data);
+    } catch (err) {
+      console.error("Error fetching quote for printing", err);
+      alert("Failed to fetch quote data.");
+    }
+  };
+
+  useEffect(() => {
+    const fetchQuotes = async () => {
+      try {
         const response = await axios.get("/api/quotes");
         setQuotes(response.data);
       } catch (err) {
@@ -55,7 +71,12 @@ const Quotes = () => {
   }, []);
 
   const columns = [
-    { field: "id", headerName: "quote_no" },
+    {
+      field: "formatted_quote_no",
+      headerName: "Quote Number",
+      flex: 1,
+      renderCell: (params) => formatQuoteNumber(params.row.quote_no),
+    },
     {
       field: "date",
       headerName: "date",
@@ -95,12 +116,12 @@ const Quotes = () => {
         <Button
           variant="outlined"
           size="small"
-          onClick={() => handleOpenModal(params.row.id)}
+          onClick={() => handleOpenModal(params.row.quote_no)}
         >
           View Details
         </Button>
       ),
-    }
+    },
   ];
 
   return (
@@ -110,15 +131,9 @@ const Quotes = () => {
         m="40px 0 0 0"
         height="75vh"
         sx={{
-          "& .MuiDataGrid-root": {
-            border: "none",
-          },
-          "& .MuiDataGrid-cell": {
-            borderBottom: "none",
-          },
-          "& .name-column--cell": {
-            color: colors.greenAccent[300],
-          },
+          "& .MuiDataGrid-root": { border: "none" },
+          "& .MuiDataGrid-cell": { borderBottom: "none" },
+          "& .name-column--cell": { color: colors.greenAccent[300] },
           "& .MuiDataGrid-columnHeaders": {
             backgroundColor: colors.blueAccent[700],
             borderBottom: "none",
@@ -135,7 +150,7 @@ const Quotes = () => {
           },
         }}
       >
-        <Box display="flex" justifyContent="space-between" mb={2}>
+        <Box display="flex" justifyContent="space-between" mb={2} gap={2}>
           <CreateQuote onQuoteCreated={() => window.location.reload()} />
           <Button
             variant="contained"
@@ -145,24 +160,57 @@ const Quotes = () => {
           >
             Submit as Order
           </Button>
+          <Button
+            variant="contained"
+            color="info"
+            disabled={selectedQuoteIds.length !== 1}
+            onClick={handlePrint}
+          >
+            Print Quote
+          </Button>
         </Box>
+
         <DataGrid
           checkboxSelection
           rows={quotes}
           columns={columns}
-          getRowId={(row) => row.id}
-          onRowSelectionModelChange={({ ids }) => {
-            const arrayOfIds = Array.from(ids); // turn Set into a plain array
-            console.log("Selected quote IDs:", arrayOfIds);
-            setSelectedQuoteIds(arrayOfIds); // store as array
+          getRowId={(row) => row.quote_no.toString()}
+          onRowSelectionModelChange={(selectionModel) => {
+            const selectedIds = Array.from(selectionModel.ids || []);
+            setSelectedQuoteIds(selectedIds);
           }}
         />
+
         <QuoteDetails
           open={modalOpen}
           onClose={() => setModalOpen(false)}
           quoteId={selectedQuoteId}
         />
       </Box>
+
+      {/* Render print button and content only when printQuote is ready */}
+      {printQuote && (
+        <>
+          <ReactToPrint
+            trigger={() => (
+              <Box mt={2}>
+                <Button variant="contained" color="secondary">
+                  Print Now
+                </Button>
+              </Box>
+            )}
+            content={() => printRef.current}
+            documentTitle={`Quote_${printQuote.quote_no}`}
+            removeAfterPrint
+          />
+
+          <div style={{ display: "none" }}>
+            <div ref={printRef}>
+              <PrintQuote quote={printQuote} />
+            </div>
+          </div>
+        </>
+      )}
     </Box>
   );
 };

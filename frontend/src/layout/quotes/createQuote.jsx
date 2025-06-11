@@ -1,5 +1,5 @@
-// Imports unchanged
-import { useState } from "react";
+import { Autocomplete } from "@mui/material";
+import { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -18,6 +18,7 @@ import {ExpandMore} from '@mui/icons-material'
 import axios from "axios";
 
 const CreateQuote = ({ onQuoteCreated }) => {
+  const [customerOptions, setCustomerOptions] = useState([]);
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     date: "",
@@ -40,6 +41,20 @@ const CreateQuote = ({ onQuoteCreated }) => {
       }
     ]
   });
+
+  useEffect(() => {
+    const fetchCustomers = async () => {
+      try {
+        const response = await axios.get("/api/customers");
+        setCustomerOptions(response.data);
+      } catch (error) {
+        console.error("Error fetching customers:", error);
+      }
+    };
+
+    fetchCustomers();
+  }, []);
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -113,7 +128,17 @@ const CreateQuote = ({ onQuoteCreated }) => {
               <TextField fullWidth name="date" label="Date" type="date" value={formData.date} onChange={handleChange} InputLabelProps={{ shrink: true }} />
             </Grid>
             <Grid item xs={6}>
-              <TextField fullWidth name="customer" label="Customer" value={formData.customer} onChange={handleChange} />
+              <Autocomplete
+                options={customerOptions}
+                getOptionLabel={(option) => option.name}
+                isOptionEqualToValue={(option, value) => option.quote_no === value.quote_no}
+                onChange={(event, newValue) => {
+                  setFormData({ ...formData, customer: newValue ? newValue.id : "" });
+                }}
+                renderInput={(params) => (
+                  <TextField {...params} label="Customer" variant="outlined" />
+                )}
+              />
             </Grid>
             <Grid item xs={6}>
               <TextField fullWidth name="total" label="Total" type="number" value={formData.total} onChange={handleChange} />

@@ -10,7 +10,7 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       order_id: {
-        type: Sequelize.INTEGER
+        type: Sequelize.BIGINT
       },
       material: {
         type: Sequelize.STRING

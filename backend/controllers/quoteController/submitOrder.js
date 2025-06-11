@@ -3,12 +3,15 @@ const router = express.Router();
 const { Quote, QuoteDetails, Order, OrderDetail } = require('../../models');
 
 router.post('/:id/submit-as-order', async (req, res) => {
-  const quoteId = parseInt(req.params.id, 10);
+  const quoteId = BigInt(req.params.id, 10);
   const t = await require('../../models').sequelize.transaction();
 
   try {
-    const quote = await Quote.findByPk(quoteId, { transaction: t });
-    if (!quote) return res.status(404).json({ error: 'Quote not found' });
+    const quoteNo = BigInt(req.params.id, 10); 
+    const quote = await Quote.findOne({ 
+      where: { quote_no: quoteNo },
+      transaction: t
+    });
 
     const order = await Order.create({
       quote_no: quote.id,
@@ -18,7 +21,7 @@ router.post('/:id/submit-as-order', async (req, res) => {
       total: quote.total
     }, { transaction: t });
 
-    const details = await QuoteDetails.findAll({ where: { quote_id: quoteId }, transaction: t });
+    const details = await QuoteDetails.findAll({ where: { quote_id: quoteNo }, transaction: t });
 
     const orderDetails = details.map(detail => ({
       order_id: order.id,
