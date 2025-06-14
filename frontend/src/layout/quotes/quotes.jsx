@@ -2,10 +2,8 @@ import { Box, Typography, useTheme, Button } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
 import Header from "../../components/header";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
-import ReactToPrint from "react-to-print";
-import PrintQuote from './printQuote';
 import CreateQuote from "./createQuote";
 import QuoteDetails from "./quoteDetails";
 import { formatQuoteNumber } from "../../utils/quoteNum";
@@ -15,14 +13,13 @@ const Quotes = () => {
   const colors = tokens(theme.palette.mode);
 
   const [quotes, setQuotes] = useState([]);
-  const [selectedQuoteId, setSelectedQuoteId] = useState(null);
+  const [selectedQuote, setSelectedQuote] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedQuoteIds, setSelectedQuoteIds] = useState([]);
-  const [printQuote, setPrintQuote] = useState(null);
-  const printRef = useRef();
 
   const handleOpenModal = (quote_no) => {
-    setSelectedQuoteId(quote_no);
+    const found = quotes.find(q => q.quote_no === quote_no);
+    setSelectedQuote(found);
     setModalOpen(true);
   };
 
@@ -38,23 +35,6 @@ const Quotes = () => {
     } catch (err) {
       console.error("Failed to submit quotes as orders", err?.response?.data || err);
       alert("Something went wrong");
-    }
-  };
-
-  const handlePrint = async () => {
-    if (selectedQuoteIds.length !== 1) {
-      alert("Please select exactly one quote to print.");
-      return;
-    }
-
-    try {
-      const quote_no = selectedQuoteIds[0];
-      console.log(quote_no)
-      const response = await axios.get(`/api/quotes/by-quote-no/${quote_no}`);
-      setPrintQuote(response.data);
-    } catch (err) {
-      console.error("Error fetching quote for printing", err);
-      alert("Failed to fetch quote data.");
     }
   };
 
@@ -160,14 +140,6 @@ const Quotes = () => {
           >
             Submit as Order
           </Button>
-          <Button
-            variant="contained"
-            color="info"
-            disabled={selectedQuoteIds.length !== 1}
-            onClick={handlePrint}
-          >
-            Print Quote
-          </Button>
         </Box>
 
         <DataGrid
@@ -184,33 +156,9 @@ const Quotes = () => {
         <QuoteDetails
           open={modalOpen}
           onClose={() => setModalOpen(false)}
-          quoteId={selectedQuoteId}
+          quote={selectedQuote}
         />
       </Box>
-
-      {/* Render print button and content only when printQuote is ready */}
-      {printQuote && (
-        <>
-          <ReactToPrint
-            trigger={() => (
-              <Box mt={2}>
-                <Button variant="contained" color="secondary">
-                  Print Now
-                </Button>
-              </Box>
-            )}
-            content={() => printRef.current}
-            documentTitle={`Quote_${printQuote.quote_no}`}
-            removeAfterPrint
-          />
-
-          <div style={{ display: "none" }}>
-            <div ref={printRef}>
-              <PrintQuote quote={printQuote} />
-            </div>
-          </div>
-        </>
-      )}
     </Box>
   );
 };

@@ -10,7 +10,7 @@ router.post("/", async (req, res) => {
 
     // Step 1: Get the customer's latest major and minor numbers
     const previousQuote = await Quote.findOne({
-      where: { customer: customer.toString() },
+      where: { customer: customer },
       order: [["quote_no", "DESC"]],
       transaction: t
     });
@@ -30,10 +30,8 @@ router.post("/", async (req, res) => {
       }
     }
 
-    const quote_no = encodeQuoteNumber(parseInt(customer), status, major, minor);
+    const quote_no = encodeQuoteNumber(BigInt(customer), status, major, minor);
 
-    // Step 2: Create the quote
-    // Ensure `id` is not included to prevent null insertion
     const { id, ...safeQuoteData } = quoteData;
 
     const newQuote = await Quote.create(
@@ -45,7 +43,7 @@ router.post("/", async (req, res) => {
     // Step 3: Add quoteDetails
     const detailsWithQuoteId = quoteDetails.map(detail => ({
       ...detail,
-      quote_id: newQuote.id,
+      quote_id: newQuote.quote_no,
     }));
 
     await QuoteDetails.bulkCreate(detailsWithQuoteId, { transaction: t });

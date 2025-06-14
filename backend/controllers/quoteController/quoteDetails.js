@@ -19,7 +19,7 @@ quote_detail.post('/', async (req, res) => {
 quote_detail.get('/:quote_id', async (req, res) => {
   try {
     const { quote_id } = req.params;
-    const details = await QuoteDetails.findAll({ 
+    const details = await QuoteDetails.findAll({
       where: { quote_id },
       order: [['id', 'ASC']]
     });

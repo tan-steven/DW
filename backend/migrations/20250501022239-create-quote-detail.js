@@ -10,7 +10,13 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       quote_id: {
-        type: Sequelize.BIGINT
+        type: Sequelize.BIGINT,
+        references: {
+          model: 'quotes',
+          key: 'quote_no'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'SET NULL'
       },
       material: {
         type: Sequelize.STRING

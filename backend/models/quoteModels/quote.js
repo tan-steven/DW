@@ -21,6 +21,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
     },
     quote_no:{
+      unique: true,
       type: DataTypes.INTEGER,
     },
     date: {

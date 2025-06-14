@@ -14,7 +14,7 @@ getQuote.get('/', async (req, res)=>{
     }
 })
 
-getQuote.get('/by-quote-no/:quote_no', async (req, res) => {
+getQuote.get('/quote-no/:quote_no', async (req, res) => {
   try {
     const quote = await Quote.findOne({
       where: { quote_no: req.params.quote_no },

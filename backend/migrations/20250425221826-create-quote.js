@@ -10,6 +10,7 @@ module.exports = {
         autoIncrement:true,
       },
       quote_no:{
+        unique: true,
         type: Sequelize.BIGINT,
       },
       date: {
