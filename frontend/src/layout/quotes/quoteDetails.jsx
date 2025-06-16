@@ -6,6 +6,7 @@ import {
   AccordionSummary,
   AccordionDetails,
   Grid,
+  Button,
 } from "@mui/material";
 import { ExpandMore } from "@mui/icons-material";
 import { useEffect, useState } from "react";
@@ -61,6 +62,16 @@ const quoteDetails = ({ open, onClose, quote }) => {
             <Typography variant="body1">
               <strong>Sub Total:</strong> ${quote.sub_total}
             </Typography>
+            <Button
+              variant="outlined"
+              color="secondary"
+              fullWidth
+              onClick={() => {
+                window.open(`/print-quote/${quote.quote_no}`, "_blank");
+              }}
+            >
+              Print Quote
+            </Button>
           </Box>
         )}
 

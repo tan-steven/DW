@@ -96,7 +96,7 @@ const Sidebar = () => {
                   alt="LOGO"
                   width="100px"
                   height="100px"
-                  src={`../../assets/diamond-windows-logo.jpg`}
+                  src={'../../assets/diamond-windows-logo.jpg'}
                   style={{ cursor: "pointer", borderRadius: "50%" }}
                 />
               </Box>

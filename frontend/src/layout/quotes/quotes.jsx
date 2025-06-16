@@ -95,6 +95,7 @@ const Quotes = () => {
       renderCell: (params) => (
         <Button
           variant="outlined"
+          color="secondary"
           size="small"
           onClick={() => handleOpenModal(params.row.quote_no)}
         >
@@ -134,7 +135,7 @@ const Quotes = () => {
           <CreateQuote onQuoteCreated={() => window.location.reload()} />
           <Button
             variant="contained"
-            color="success"
+            color="secondary"
             disabled={selectedQuoteIds.length === 0}
             onClick={handleSubmitAsOrder}
           >

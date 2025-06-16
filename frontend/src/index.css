@@ -33,3 +33,10 @@ body,
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
+@media print {
+  button,
+  .MuiBox-root{
+    display: none !important;
+  }
+}

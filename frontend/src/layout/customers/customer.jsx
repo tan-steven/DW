@@ -91,7 +91,7 @@ const CustomerPage = () => {
         />
       </Box>
 
-      <Button variant="contained" color="primary" onClick={handleSubmit}>
+      <Button variant="contained" color="secondary" onClick={handleSubmit}>
         Submit
       </Button>
 

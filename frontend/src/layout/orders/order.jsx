@@ -71,7 +71,7 @@ const Orders = () => {
       headerName: "Actions",
       flex: 1,
       renderCell: (params) => (
-        <Button variant="outlined" size="small" onClick={() => handleOpenModal(params.row.id)}>
+        <Button variant="outlined" color="secondary" size="small" onClick={() => handleOpenModal(params.row.id)}>
           View Details
         </Button>
       ),
@@ -84,7 +84,7 @@ const Orders = () => {
       <Box m="40px 0 0 0" height="75vh">
         <Button
           variant="contained"
-          color="success"
+          color="secondary"
           disabled={selectedOrderIds.length === 0}
           onClick={handleSubmitAsInvoice}
         >

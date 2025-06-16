@@ -9,6 +9,7 @@ import Quotes from './layout/quotes/quotes';
 import Invoices from './layout/invoices/invoice';
 import Orders from './layout/orders/order';
 import CustomerPage from './layout/customers/customer';
+import PrintQuote from './layout/quotes/PrintQuote';
 
 const App = () => {
   const [theme, colorMode] = useMode();
@@ -26,6 +27,7 @@ const App = () => {
               <Route path='/orders' element={<Orders />}/>
               <Route path='/invoices' element={<Invoices />}/>
               <Route path="/customers" element={<CustomerPage />} />
+              <Route path="/print-quote/:quote_no" element={<PrintQuote />} />
             </Routes>
           </main>
         </div>

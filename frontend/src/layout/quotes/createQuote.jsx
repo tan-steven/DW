@@ -101,7 +101,7 @@ const CreateQuote = ({ onQuoteCreated }) => {
 
   return (
     <Box>
-      <Button variant="contained" color="primary" onClick={() => setOpen(true)}>
+      <Button variant="contained" color="secondary" onClick={() => setOpen(true)}>
         Add New Quote
       </Button>
 
@@ -179,12 +179,12 @@ const CreateQuote = ({ onQuoteCreated }) => {
 
             {/* Add Line Button */}
             <Grid item xs={12}>
-              <Button variant="outlined" onClick={handleAddDetailLine}>Add Line</Button>
+              <Button variant="outlined" color="" onClick={handleAddDetailLine}>Add Line</Button>
             </Grid>
 
             {/* Submit Button */}
             <Grid item xs={12}>
-              <Button fullWidth variant="contained" color="success" onClick={handleSubmit}>Submit</Button>
+              <Button fullWidth variant="contained" color="secondary" onClick={handleSubmit}>Submit</Button>
             </Grid>
           </Grid>
         </Box>
