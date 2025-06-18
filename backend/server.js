@@ -21,7 +21,10 @@ const getDetails = require("./controllers/orderController/getDetails");
 const submitOrder = require('./controllers/quoteController/submitOrder');
 const submitOrderAsInvoice = require('./controllers/orderController/submitOrderAsInvoice');
 const customerRoute = require('./controllers/customerController/customers');
+const { login } = require('./controllers/authController/authController');
 
+app.use(express.json());
+app.post('/api/login', login);
 app.use('/api/customers', customerRoute);
 app.use('/api/orders', submitOrderAsInvoice);
 app.use('/api/quotes', getQuote);
