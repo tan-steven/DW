@@ -1,75 +1,93 @@
-import { useEffect, useState } from "react";
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
+  Modal,
+  Box,
   Typography,
-  Table,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Grid,
+  Button,
 } from "@mui/material";
+import { ExpandMore } from "@mui/icons-material";
+import { useEffect, useState } from "react";
 import axios from "../../utils/axiosConfig";
 
-const OrderDetails = ({ open, onClose, orderId }) => {
-  const [orderDetails, setOrderDetails] = useState([]);
+const OrderDetails = ({ open, onClose, order }) => {
+  const [details, setDetails] = useState([]);
 
   useEffect(() => {
-    if (orderId) {
-      axios.get(`/api/orders/${orderId}`)
-        .then(res => setOrderDetails(res.data))
-        .catch(err => console.error("Failed to fetch order details:", err));
+    if (order?.id && open) {
+      axios
+        .get(`/api/orders/${order.id}`)
+        .then((res) => setDetails(res.data))
+        .catch((err) =>
+          console.error("Error fetching order details", err)
+        );
     }
-  }, [orderId]);
+  }, [order, open]);
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
-      <DialogTitle>Order Details</DialogTitle>
-      <DialogContent dividers>
-        {orderDetails.length === 0 ? (
-          <Typography>No details found.</Typography>
-        ) : (
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Material</TableCell>
-                <TableCell>Product Type</TableCell>
-                <TableCell>CL</TableCell>
-                <TableCell>Unit</TableCell>
-                <TableCell>Width</TableCell>
-                <TableCell>Height</TableCell>
-                <TableCell>AT</TableCell>
-                <TableCell>GL</TableCell>
-                <TableCell>GRD</TableCell>
-                <TableCell>SC</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {orderDetails.map((item, idx) => (
-                <TableRow key={idx}>
-                  <TableCell>{item.material}</TableCell>
-                  <TableCell>{item.product_type}</TableCell>
-                  <TableCell>{item.CL}</TableCell>
-                  <TableCell>{item.unit}</TableCell>
-                  <TableCell>{item.width}</TableCell>
-                  <TableCell>{item.height}</TableCell>
-                  <TableCell>{item.at}</TableCell>
-                  <TableCell>{item.GL}</TableCell>
-                  <TableCell>{item.GRD ? "Yes" : "No"}</TableCell>
-                  <TableCell>{item.SC}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+    <Modal open={open} onClose={onClose}>
+      <Box
+        sx={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: 700,
+          bgcolor: "background.paper",
+          borderRadius: 2,
+          boxShadow: 24,
+          p: 4,
+          maxHeight: "90vh",
+          overflowY: "auto",
+        }}
+      >
+        <Typography variant="h6" mb={2}>
+          Order Details - #{order?.id || "loading..."}
+        </Typography>
+
+        {order && (
+          <Box mb={2}>
+            <Typography variant="body1">
+              <strong>Date:</strong> {order.date}
+            </Typography>
+            <Typography variant="body1">
+              <strong>Customer:</strong> {order.customer}
+            </Typography>
+            <Typography variant="body1">
+              <strong>Total:</strong> ${order.total}
+            </Typography>
+            <Typography variant="body1">
+              <strong>Sub Total:</strong> ${order.sub_total}
+            </Typography>
+          </Box>
         )}
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Close</Button>
-      </DialogActions>
-    </Dialog>
+
+        {details.length === 0 ? (
+          <Typography>No details found for this order.</Typography>
+        ) : (
+          details.map((item, index) => (
+            <Accordion key={index} sx={{ mb: 2 }}>
+              <AccordionSummary expandIcon={<ExpandMore />}>
+                <Typography>Line #{index + 1}</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Grid container spacing={2}>
+                  {Object.entries(item).map(([key, value]) => (
+                    <Grid item xs={6} key={key}>
+                      <Typography variant="body2">
+                        <strong>{key}:</strong> {String(value)}
+                      </Typography>
+                    </Grid>
+                  ))}
+                </Grid>
+              </AccordionDetails>
+            </Accordion>
+          ))
+        )}
+      </Box>
+    </Modal>
   );
 };
 

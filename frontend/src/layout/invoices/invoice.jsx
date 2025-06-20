@@ -1,23 +1,23 @@
-import { Box, Typography, useTheme } from "@mui/material";
+import { Box, Typography, useTheme, Button } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
 import Header from "../../components/header";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../../utils/axiosConfig";
 import InvoiceDetails from "./invoiceDetails";
-
-import { Button } from "@mui/material";
 
 const Invoices = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
 
   const [invoices, setInvoices] = useState([]);
-  const [selectedInvoiceId, setSelectedInvoiceId] = useState(null);
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [selectedInvoiceIds, setSelectedInvoiceIds] = useState([]);
 
   const handleOpenModal = (id) => {
-    setSelectedInvoiceId(id);
+    const found = invoices.find(i => i.id === id);
+    setSelectedInvoice(found);
     setModalOpen(true);
   };
 
@@ -27,25 +27,21 @@ const Invoices = () => {
         const response = await axios.get("/api/invoices");
         setInvoices(response.data);
       } catch (err) {
-        console.log("Error fetching invoice from frontend", err);
+        console.log("Error fetching invoices", err);
       }
     };
     fetchInvoices();
   }, []);
 
   const columns = [
-    { field: "id", headerName: "invoice_no" },
+    { field: "id", headerName: "Invoice Number", flex: 1 },
     {
       field: "date",
       headerName: "date",
       flex: 1,
       cellClassName: "name-column--cell",
     },
-    {
-      field: "customer",
-      headerName: "customer",
-      flex: 1,
-    },
+    { field: "customer", headerName: "customer", flex: 1 },
     {
       field: "total",
       headerName: "total",
@@ -73,6 +69,7 @@ const Invoices = () => {
       renderCell: (params) => (
         <Button
           variant="outlined"
+          color="secondary"
           size="small"
           onClick={() => handleOpenModal(params.row.id)}
         >
@@ -89,15 +86,9 @@ const Invoices = () => {
         m="40px 0 0 0"
         height="75vh"
         sx={{
-          "& .MuiDataGrid-root": {
-            border: "none",
-          },
-          "& .MuiDataGrid-cell": {
-            borderBottom: "none",
-          },
-          "& .name-column--cell": {
-            color: colors.greenAccent[300],
-          },
+          "& .MuiDataGrid-root": { border: "none" },
+          "& .MuiDataGrid-cell": { borderBottom: "none" },
+          "& .name-column--cell": { color: colors.greenAccent[300] },
           "& .MuiDataGrid-columnHeaders": {
             backgroundColor: colors.blueAccent[700],
             borderBottom: "none",
@@ -114,13 +105,23 @@ const Invoices = () => {
           },
         }}
       >
-        <DataGrid checkboxSelection rows={invoices} columns={columns} />
+        <DataGrid
+          checkboxSelection
+          rows={invoices}
+          columns={columns}
+          getRowId={(row) => row.id.toString()}
+          onRowSelectionModelChange={(selectionModel) => {
+            const selectedIds = Array.from(selectionModel);
+            setSelectedInvoiceIds(selectedIds);
+          }}
+        />
+
+        <InvoiceDetails
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          invoice={selectedInvoice}
+        />
       </Box>
-      <InvoiceDetails
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        invoiceId={selectedInvoiceId}
-      />
     </Box>
   );
 };

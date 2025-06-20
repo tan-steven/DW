@@ -1,23 +1,39 @@
-import { Box, Typography, useTheme } from "@mui/material";
+import { Box, Typography, useTheme, Button } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
 import Header from "../../components/header";
 import { useEffect, useState } from "react";
 import axios from "../../utils/axiosConfig";
-import { Button } from "@mui/material";
 import OrderDetails from "./orderDetails";
 
 const Orders = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+
   const [orders, setOrders] = useState([]);
-  const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const [selectedOrder, setSelectedOrder] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedOrderIds, setSelectedOrderIds] = useState([]);
 
   const handleOpenModal = (id) => {
-    setSelectedOrderId(id);
+    const found = orders.find(o => o.id === id);
+    setSelectedOrder(found);
     setModalOpen(true);
+  };
+
+  const handleSubmitAsInvoice = async () => {
+    if (!Array.isArray(selectedOrderIds) || selectedOrderIds.length === 0) return;
+
+    try {
+      for (const id of selectedOrderIds) {
+        await axios.post(`/api/orders/${id}/submit-as-invoice`);
+      }
+      alert("Submitted to invoices successfully");
+      window.location.reload();
+    } catch (err) {
+      console.error("Failed to submit orders as invoices", err?.response?.data || err);
+      alert("Something went wrong");
+    }
   };
 
   useEffect(() => {
@@ -26,44 +42,39 @@ const Orders = () => {
         const response = await axios.get("/api/orders");
         setOrders(response.data);
       } catch (err) {
-        console.log("Error fetching orders:", err);
+        console.log("Error fetching orders", err);
       }
     };
     fetchOrders();
   }, []);
 
-  const handleSubmitAsInvoice = async () => {
-    console.log("Submitting orders as invoices:", selectedOrderIds);
-    try {
-      for (const id of selectedOrderIds) {
-        await axios.post(`/api/orders/${id}/submit-as-invoice`);
-      }
-      alert("Orders submitted as invoices.");
-      window.location.reload();
-    } catch (err) {
-      console.error("Failed to submit orders as invoices", err);
-      alert("Something went wrong");
-    }
-  };
-
   const columns = [
-    { field: "id", headerName: "order_no" },
-    { field: "date", headerName: "date", flex: 1 },
+    { field: "id", headerName: "Order Number", flex: 1 },
+    {
+      field: "date",
+      headerName: "date",
+      flex: 1,
+      cellClassName: "name-column--cell",
+    },
     { field: "customer", headerName: "customer", flex: 1 },
     {
       field: "total",
       headerName: "total",
       flex: 1,
       renderCell: (params) => (
-        <Typography color={colors.greenAccent[500]}>${params.row.total}</Typography>
+        <Typography color={colors.greenAccent[500]}>
+          ${params.row.total}
+        </Typography>
       ),
     },
     {
-      field: "sub_total",
+      field: "sub total",
       headerName: "sub total",
       flex: 1,
       renderCell: (params) => (
-        <Typography color={colors.greenAccent[500]}>${params.row.sub_total}</Typography>
+        <Typography color={colors.greenAccent[500]}>
+          ${params.row.sub_total}
+        </Typography>
       ),
     },
     {
@@ -71,7 +82,12 @@ const Orders = () => {
       headerName: "Actions",
       flex: 1,
       renderCell: (params) => (
-        <Button variant="outlined" color="secondary" size="small" onClick={() => handleOpenModal(params.row.id)}>
+        <Button
+          variant="outlined"
+          color="secondary"
+          size="small"
+          onClick={() => handleOpenModal(params.row.id)}
+        >
           View Details
         </Button>
       ),
@@ -81,27 +97,56 @@ const Orders = () => {
   return (
     <Box m="20px">
       <Header title="Orders" subtitle="List of Orders" />
-      <Box m="40px 0 0 0" height="75vh">
-        <Button
-          variant="contained"
-          color="secondary"
-          disabled={selectedOrderIds.length === 0}
-          onClick={handleSubmitAsInvoice}
-        >
-          Submit as Invoice
-        </Button>
+      <Box
+        m="40px 0 0 0"
+        height="75vh"
+        sx={{
+          "& .MuiDataGrid-root": { border: "none" },
+          "& .MuiDataGrid-cell": { borderBottom: "none" },
+          "& .name-column--cell": { color: colors.greenAccent[300] },
+          "& .MuiDataGrid-columnHeaders": {
+            backgroundColor: colors.blueAccent[700],
+            borderBottom: "none",
+          },
+          "& .MuiDataGrid-virtualScroller": {
+            backgroundColor: colors.primary[400],
+          },
+          "& .MuiDataGrid-footerContainer": {
+            borderTop: "none",
+            backgroundColor: colors.blueAccent[700],
+          },
+          "& .MuiCheckbox-root": {
+            color: `${colors.greenAccent[200]} !important`,
+          },
+        }}
+      >
+        <Box display="flex" justifyContent="space-between" mb={2} gap={2}>
+          <Button
+            variant="contained"
+            color="secondary"
+            disabled={selectedOrderIds.length === 0}
+            onClick={handleSubmitAsInvoice}
+          >
+            Submit as Invoice
+          </Button>
+        </Box>
 
         <DataGrid
           checkboxSelection
           rows={orders}
           columns={columns}
-          getRowId={(row) => row.id}
-          onRowSelectionModelChange={({ ids }) => {
-            setSelectedOrderIds(Array.from(ids));
+          getRowId={(row) => row.id.toString()}
+          onRowSelectionModelChange={(selectionModel) => {
+            const selectedIds = Array.from(selectionModel.ids || []);
+            setSelectedOrderIds(selectedIds);
           }}
         />
 
-        <OrderDetails open={modalOpen} onClose={() => setModalOpen(false)} orderId={selectedOrderId} />
+        <OrderDetails
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          order={selectedOrder}
+        />
       </Box>
     </Box>
   );

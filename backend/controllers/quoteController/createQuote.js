@@ -6,8 +6,7 @@ const router = require('express').Router();
 router.post("/", async (req, res) => {
   const t = await db.sequelize.transaction();
   try {
-    const { quoteDetails, customer, status, ...quoteData } = req.body;
-
+    const { quoteDetails, customer, customerId, status, ...quoteData } = req.body;
     // Step 1: Get the customer's latest major and minor numbers
     const previousQuote = await Quote.findOne({
       where: { customer: customer },
@@ -30,8 +29,8 @@ router.post("/", async (req, res) => {
       }
     }
 
-    const quote_no = encodeQuoteNumber(BigInt(customer), status, major, minor);
-
+    const quote_no = encodeQuoteNumber(BigInt(customerId), status, major, minor);
+    
     const { id, ...safeQuoteData } = quoteData;
 
     const newQuote = await Quote.create(

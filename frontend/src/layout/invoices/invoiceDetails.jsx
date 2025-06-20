@@ -1,81 +1,107 @@
-import { useEffect, useState } from "react";
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
+  Modal,
+  Box,
   Typography,
-  Table,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Grid,
+  Button,
 } from "@mui/material";
-import axios from "axios";
+import { ExpandMore } from "@mui/icons-material";
+import { useEffect, useState, useRef } from "react";
+import axios from "../../utils/axiosConfig";
+import { useReactToPrint } from "react-to-print";
 
-const InvoiceDetails = ({ open, onClose, invoiceId }) => {
-  const [invoiceDetails, setInvoiceDetails] = useState([]);
+const InvoiceDetails = ({ open, onClose, invoice }) => {
+  const [details, setDetails] = useState([]);
+  const printRef = useRef();
 
   useEffect(() => {
-    if (invoiceId) {
-      const fetchDetails = async () => {
-        try {
-          const response = await axios.get(`/api/invoiceDetails/${invoiceId}`);
-          setInvoiceDetails(response.data);
-        } catch (error) {
-          console.error("Failed to fetch invoice details:", error);
-        }
-      };
-      fetchDetails();
+    if (invoice?.id && open) {
+      axios
+        .get(`/api/invoiceDetails/${invoice.id}`)
+        .then((res) => setDetails(res.data))
+        .catch((err) =>
+          console.error("Error fetching invoice details", err)
+        );
     }
-  }, [invoiceId]);
+  }, [invoice, open]);
+
+  const handlePrint = useReactToPrint({
+    content: () => printRef.current,
+  });
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
-      <DialogTitle>Invoice Details</DialogTitle>
-      <DialogContent dividers>
-        {invoiceDetails.length === 0 ? (
-          <Typography>No details found for this invoice.</Typography>
-        ) : (
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Material</TableCell>
-                <TableCell>Product Type</TableCell>
-                <TableCell>CL</TableCell>
-                <TableCell>Unit</TableCell>
-                <TableCell>Width</TableCell>
-                <TableCell>Height</TableCell>
-                <TableCell>AT</TableCell>
-                <TableCell>GL</TableCell>
-                <TableCell>GRD</TableCell>
-                <TableCell>SC</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {invoiceDetails.map((item, index) => (
-                <TableRow key={index}>
-                  <TableCell>{item.material}</TableCell>
-                  <TableCell>{item.product_type}</TableCell>
-                  <TableCell>{item.CL}</TableCell>
-                  <TableCell>{item.unit}</TableCell>
-                  <TableCell>{item.width}</TableCell>
-                  <TableCell>{item.height}</TableCell>
-                  <TableCell>{item.at}</TableCell>
-                  <TableCell>{item.GL}</TableCell>
-                  <TableCell>{item.GRD ? "Yes" : "No"}</TableCell>
-                  <TableCell>{item.SC}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Close</Button>
-      </DialogActions>
-    </Dialog>
+    <Modal open={open} onClose={onClose}>
+      <Box
+        sx={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: 700,
+          bgcolor: "background.paper",
+          borderRadius: 2,
+          boxShadow: 24,
+          p: 4,
+          maxHeight: "90vh",
+          overflowY: "auto",
+        }}
+      >
+        <Box ref={printRef}>
+          <Typography variant="h6" mb={2}>
+            Invoice Details - #{invoice?.id || "loading..."}
+          </Typography>
+
+          {invoice && (
+            <Box mb={2}>
+              <Typography variant="body1">
+                <strong>Date:</strong> {invoice.date}
+              </Typography>
+              <Typography variant="body1">
+                <strong>Customer:</strong> {invoice.customer}
+              </Typography>
+              <Typography variant="body1">
+                <strong>Total:</strong> ${invoice.total}
+              </Typography>
+              <Typography variant="body1">
+                <strong>Sub Total:</strong> ${invoice.sub_total}
+              </Typography>
+            </Box>
+          )}
+
+          {details.length === 0 ? (
+            <Typography>No details found for this invoice.</Typography>
+          ) : (
+            details.map((item, index) => (
+              <Accordion key={index} sx={{ mb: 2 }}>
+                <AccordionSummary expandIcon={<ExpandMore />}>
+                  <Typography>Line #{index + 1}</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Grid container spacing={2}>
+                    {Object.entries(item).map(([key, value]) => (
+                      <Grid item xs={6} key={key}>
+                        <Typography variant="body2">
+                          <strong>{key}:</strong> {String(value)}
+                        </Typography>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </AccordionDetails>
+              </Accordion>
+            ))
+          )}
+        </Box>
+
+        <Box mt={2} display="flex" justifyContent="flex-end">
+          <Button variant="outlined" onClick={handlePrint}>
+            Print
+          </Button>
+        </Box>
+      </Box>
+    </Modal>
   );
 };
 

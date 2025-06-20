@@ -133,7 +133,11 @@ const CreateQuote = ({ onQuoteCreated }) => {
                 getOptionLabel={(option) => option.name}
                 isOptionEqualToValue={(option, value) => option.quote_no === value.quote_no}
                 onChange={(event, newValue) => {
-                  setFormData({ ...formData, customer: newValue ? newValue.id : "" });
+                  setFormData({
+                    ...formData,
+                    customer: newValue ? newValue.name : "",
+                    customerId: newValue ? newValue.id : ""
+                  });
                 }}
                 renderInput={(params) => (
                   <TextField {...params} label="Customer" variant="outlined" />
