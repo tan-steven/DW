@@ -3,7 +3,7 @@ import { DataGrid } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
 import Header from "../../components/header";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../../utils/axiosConfig";
 import CreateQuote from "./createQuote";
 import QuoteDetails from "./quoteDetails";
 import { formatQuoteNumber } from "../../utils/quoteNum";

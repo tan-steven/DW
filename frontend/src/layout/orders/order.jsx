@@ -3,7 +3,7 @@ import { DataGrid } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
 import Header from "../../components/header";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../../utils/axiosConfig";
 import { Button } from "@mui/material";
 import OrderDetails from "./orderDetails";
 
@@ -23,7 +23,7 @@ const Orders = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await axios.get("/api/getOrders");
+        const response = await axios.get("/api/orders");
         setOrders(response.data);
       } catch (err) {
         console.log("Error fetching orders:", err);

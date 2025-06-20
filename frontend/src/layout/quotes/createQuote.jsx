@@ -15,7 +15,7 @@ import {
 } from "@mui/material";
 
 import {ExpandMore} from '@mui/icons-material'
-import axios from "axios";
+import axios from "../../utils/axiosConfig";
 
 const CreateQuote = ({ onQuoteCreated }) => {
   const [customerOptions, setCustomerOptions] = useState([]);

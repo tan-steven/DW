@@ -5,7 +5,7 @@ const { Quote } = db
 getQuote.get('/', async (req, res)=>{
     try{
         const foundQuotes = await Quote.findAll({
-          attributes: ['id', 'quote_no', 'date', 'customer', 'total', 'sub_total'] // Explicitly include quote_no
+          attributes: ['id', 'quote_no', 'date', 'customer', 'total', 'sub_total']
         });
         res.status(200).json(foundQuotes);
     }catch(err){

@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import { ExpandMore } from "@mui/icons-material";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../../utils/axiosConfig";
 import { formatQuoteNumber } from "../../utils/quoteNum";
 
 const quoteDetails = ({ open, onClose, quote }) => {
@@ -19,7 +19,7 @@ const quoteDetails = ({ open, onClose, quote }) => {
   useEffect(() => {
     if (quote?.quote_no && open) {
       axios
-        .get(`/api/quoteDetails/${quote.quote_no}`)
+        .get(`/api/quotes/${quote.quote_no}`)
         .then((res) => setDetails(res.data))
         .catch((err) =>
           console.error("Error fetching quote details", err)

@@ -12,14 +12,14 @@ import {
   TableRow,
   TableCell,
 } from "@mui/material";
-import axios from "axios";
+import axios from "../../utils/axiosConfig";
 
 const OrderDetails = ({ open, onClose, orderId }) => {
   const [orderDetails, setOrderDetails] = useState([]);
 
   useEffect(() => {
     if (orderId) {
-      axios.get(`/api/orderDetails/${orderId}`)
+      axios.get(`/api/orders/${orderId}`)
         .then(res => setOrderDetails(res.data))
         .catch(err => console.error("Failed to fetch order details:", err));
     }
