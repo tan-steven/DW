@@ -67,7 +67,7 @@ const quoteDetails = ({ open, onClose, quote }) => {
               color="secondary"
               fullWidth
               onClick={() => {
-                window.open(`/print-quote/${quote.quote_no}`, "_blank");
+                window.open(`/print-quote/quote/${quote.quote_no}`, "_blank");
               }}
             >
               Print Quote

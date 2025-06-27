@@ -9,7 +9,6 @@ import OrderDetails from "./orderDetails";
 const Orders = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-
   const [orders, setOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -48,6 +47,29 @@ const Orders = () => {
     fetchOrders();
   }, []);
 
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const response = await axios.get("/api/orders");
+
+        const enhanced = response.data.map(q => {
+          const big = BigInt(q.quote_no) % 10_000_000n;
+          const status = Number(big / 1_000_000n);
+          return { ...q, status };
+        });
+
+        // Sort: Quotes (status 0) come before Orders (status 1)
+        enhanced.sort((a, b) => a.status - b.status);
+
+        setOrders(enhanced);
+      } catch (err) {
+        console.log("Error fetching quote from frontend", err);
+      }
+    };
+
+    fetchOrders();
+  }, []);
+
   const columns = [
     { field: "quote_no", headerName: "Order Number", flex: 1 },
     {
@@ -76,6 +98,19 @@ const Orders = () => {
           ${params.row.sub_total}
         </Typography>
       ),
+    },
+    {
+      field: "status",
+      headerName: "Status",
+      flex: 1,
+      renderCell: (params) => {
+        const status = (BigInt(params.row.quote_no) % 10_000_000n) / 1_000_000n; // extract first digit
+        return (
+          <Typography>
+            {status === 1n? "Order" : "Invoice"}
+          </Typography>
+        );
+      }
     },
     {
       field: "actions",

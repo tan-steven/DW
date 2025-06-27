@@ -64,6 +64,16 @@ const OrderDetails = ({ open, onClose, order }) => {
             <Typography variant="body1">
               <strong>Sub Total:</strong> ${order.sub_total}
             </Typography>
+            <Button
+              variant="outlined"
+              color="secondary"
+              fullWidth
+              onClick={() => {
+                window.open(`/print-quote/order/${order.quote_no}`, "_blank");
+              }}
+            >
+              Print Order
+            </Button>
           </Box>
         )}
 

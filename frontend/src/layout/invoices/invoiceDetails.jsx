@@ -20,7 +20,7 @@ const InvoiceDetails = ({ open, onClose, invoice }) => {
   useEffect(() => {
     if (invoice?.quote_no && open) {
       axios
-        .get(`/api/invoiceDetails/${invoice.quote_no}`)
+        .get(`/api/invoices/${invoice.quote_no}`)
         .then((res) => setDetails(res.data))
         .catch((err) =>
           console.error("Error fetching invoice details", err)
@@ -71,6 +71,16 @@ const InvoiceDetails = ({ open, onClose, invoice }) => {
               <Typography variant="body1">
                 <strong>Sub Total:</strong> ${invoice.sub_total}
               </Typography>
+              <Button
+                variant="outlined"
+                color="secondary"
+                fullWidth
+                onClick={() => {
+                  window.open(`/print-quote/invoice/${invoice.quote_no}`, "_blank");
+                }}
+              >
+                Print Invoice
+            </Button>
             </Box>
           )}
 
