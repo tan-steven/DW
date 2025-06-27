@@ -16,9 +16,9 @@ const OrderDetails = ({ open, onClose, order }) => {
   const [details, setDetails] = useState([]);
 
   useEffect(() => {
-    if (order?.id && open) {
+    if (order?.quote_no && open) {
       axios
-        .get(`/api/orders/${order.id}`)
+        .get(`/api/orders/${order.quote_no}`)
         .then((res) => setDetails(res.data))
         .catch((err) =>
           console.error("Error fetching order details", err)
@@ -44,13 +44,16 @@ const OrderDetails = ({ open, onClose, order }) => {
         }}
       >
         <Typography variant="h6" mb={2}>
-          Order Details - #{order?.id || "loading..."}
+          Order Details - #{order?.quote_no || "loading..."}
         </Typography>
 
         {order && (
           <Box mb={2}>
             <Typography variant="body1">
               <strong>Date:</strong> {order.date}
+            </Typography>
+            <Typography>
+              <strong>Order Number:</strong> {order.quote_no}
             </Typography>
             <Typography variant="body1">
               <strong>Customer:</strong> {order.customer}

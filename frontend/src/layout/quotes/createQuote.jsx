@@ -25,7 +25,6 @@ const CreateQuote = ({ onQuoteCreated }) => {
     customer: "",
     total: "",
     sub_total: "",
-    status: "",
     quoteDetails: [
       {
         material: "",
@@ -133,11 +132,15 @@ const CreateQuote = ({ onQuoteCreated }) => {
                 getOptionLabel={(option) => option.name}
                 isOptionEqualToValue={(option, value) => option.quote_no === value.quote_no}
                 onChange={(event, newValue) => {
-                  setFormData({
-                    ...formData,
-                    customer: newValue ? newValue.name : "",
-                    customerId: newValue ? newValue.id : ""
-                  });
+                  if (newValue) {
+                    setFormData({
+                      ...formData,
+                      customer: newValue.name,
+                      customerId: newValue.id
+                    });
+                  } else {
+                    setFormData({ ...formData, customer: "", customerId: "" });
+                  }
                 }}
                 renderInput={(params) => (
                   <TextField {...params} label="Customer" variant="outlined" />
@@ -149,9 +152,6 @@ const CreateQuote = ({ onQuoteCreated }) => {
             </Grid>
             <Grid item xs={6}>
               <TextField fullWidth name="sub_total" label="Sub Total" type="number" value={formData.sub_total} onChange={handleChange} />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField fullWidth name="status" label="Status" value={formData.status} onChange={handleChange} />
             </Grid>
 
             {/* Detail Lines */}

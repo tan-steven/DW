@@ -2,9 +2,6 @@ const quote_detail = require('express').Router();
 const db = require('../../models');
 const { QuoteDetails, Quote } = db;
 
-// Add this association in your models initialization:
-// In your Quote model:
-// Quote.hasMany(QuoteDetails, { foreignKey: 'quote_id', as: 'quoteDetails' });
 
 quote_detail.post('/', async (req, res) => {
   try {

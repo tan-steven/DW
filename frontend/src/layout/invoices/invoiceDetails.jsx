@@ -18,9 +18,9 @@ const InvoiceDetails = ({ open, onClose, invoice }) => {
   const printRef = useRef();
 
   useEffect(() => {
-    if (invoice?.id && open) {
+    if (invoice?.quote_no && open) {
       axios
-        .get(`/api/invoiceDetails/${invoice.id}`)
+        .get(`/api/invoiceDetails/${invoice.quote_no}`)
         .then((res) => setDetails(res.data))
         .catch((err) =>
           console.error("Error fetching invoice details", err)
@@ -58,6 +58,9 @@ const InvoiceDetails = ({ open, onClose, invoice }) => {
             <Box mb={2}>
               <Typography variant="body1">
                 <strong>Date:</strong> {invoice.date}
+              </Typography>
+              <Typography variant="body1">
+                <strong>Invoice Number:</strong> {invoice.quote_no}
               </Typography>
               <Typography variant="body1">
                 <strong>Customer:</strong> {invoice.customer}

@@ -1,21 +1,22 @@
-// src/utils/quoteNumber.js
+function encodeQuoteNumber(customerId, status, major, minor) {
+  return BigInt(customerId) * 10_000_000n +
+         BigInt(status) * 1_000_000n +
+         BigInt(major) * 100n +
+         BigInt(minor);
+}
 
-// Bit allocations (must match backend)
-// 20 bits for customerId (max 1,048,575)
-// 2 bits for status (0–3)
-// 20 bits for major (max 1,048,575)
-// 10 bits for minor (max 1023)
-
-export const encodeQuoteNumber = (customerId, status, major, minor) => {
-  return (BigInt(customerId) << 32n) | (BigInt(status) << 30n) | (BigInt(major) << 10n) | BigInt(minor);
-};
-
-export const decodeQuoteNumber = (quoteNumber) => {
-  const num = BigInt(quoteNumber);
+function decodeQuoteNumber(quote_no) {
+  const big = BigInt(quote_no) % 10_000_000n;
   return {
-    customerId: Number((num >> 32n) & 0xFFFFFn),
-    status: Number((num >> 30n) & 0x3n),
-    major: Number((num >> 10n) & 0xFFFFFn),
-    minor: Number(num & 0x3FFn),
+    customerId: BigInt(quote_no) / 10_000_000n,
+    status: (big / 1_000_000n) % 10n,
+    major: (big / 100n) % 10_000n,
+    minor: big % 100n
   };
+}
+
+
+module.exports = {
+  encodeQuoteNumber,
+  decodeQuoteNumber
 };

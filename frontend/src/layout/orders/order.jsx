@@ -49,7 +49,7 @@ const Orders = () => {
   }, []);
 
   const columns = [
-    { field: "id", headerName: "Order Number", flex: 1 },
+    { field: "quote_no", headerName: "Order Number", flex: 1 },
     {
       field: "date",
       headerName: "date",

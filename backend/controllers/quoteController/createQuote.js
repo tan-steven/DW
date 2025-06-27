@@ -1,12 +1,13 @@
-const { encodeQuoteNumber } = require("../../utils/quoteNum");
+const { encodeQuoteNumber, decodeQuoteNumber } = require("../../utils/quoteNum");
 const db = require('../../models');
-const { Quote, QuoteDetails, Customer } = db; // import Customer model
+const { Quote, QuoteDetails, Customer } = db;
 const router = require('express').Router();
 
 router.post("/", async (req, res) => {
   const t = await db.sequelize.transaction();
   try {
-    const { quoteDetails, customer, customerId, status, ...quoteData } = req.body;
+    const { quoteDetails, customerId, customer, ...quoteData } = req.body;
+
     // Step 1: Get the customer's latest major and minor numbers
     const previousQuote = await Quote.findOne({
       where: { customer: customer },
@@ -17,27 +18,19 @@ router.post("/", async (req, res) => {
     let major = 1, minor = 0;
 
     if (previousQuote) {
-      const prevQuoteNo = parseInt(previousQuote.quote_no);
-      const prevStatus = (prevQuoteNo >> 23) & 0b11;
-      const prevMajor = (prevQuoteNo >> 8) & 0x7FFF;
-      const prevMinor = prevQuoteNo & 0xFF;
-
-      if (prevStatus === status && prevMajor === major) {
-        minor = prevMinor + 1;
-      } else {
-        major = prevMajor + 1;
-      }
+      const decoded = decodeQuoteNumber(previousQuote.quote_no);
+      major = decoded.major + 1n;
+      minor = 0;
     }
 
-    const quote_no = encodeQuoteNumber(BigInt(customerId), status, major, minor);
-    
+    const quote_no = encodeQuoteNumber(BigInt(customerId), 0, major, minor);
     const { id, ...safeQuoteData } = quoteData;
 
+    // Step 2: Create the main quote
     const newQuote = await Quote.create(
-      { ...safeQuoteData, quote_no, customer, status },
+      { ...safeQuoteData, quote_no, customer },
       { transaction: t }
     );
-
 
     // Step 3: Add quoteDetails
     const detailsWithQuoteId = quoteDetails.map(detail => ({

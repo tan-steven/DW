@@ -1,15 +1,14 @@
-export const decodeQuoteNumber = (quoteNumber) => {
-  const num = BigInt(quoteNumber);
-  return {
-    customerId: Number((num >> 32n) & 0xFFFFFn),
-    status: Number((num >> 30n) & 0x3n),
-    major: Number((num >> 10n) & 0xFFFFFn),
-    minor: Number(num & 0x3FFn),
-  };
+export const decodeQuoteNumber = (quote_no) => {
+  const str = quote_no.toString().padStart(8, '0');
+  const customerId = parseInt(str.slice(0, str.length - 7));
+  const status = parseInt(str.slice(-7, -6));
+  const major = parseInt(str.slice(-6, -2));
+  const minor = parseInt(str.slice(-2));
+  return { customerId, status, major, minor };
 };
 
-export const formatQuoteNumber = (quoteNumber) => {
-  const { customerId, status, major, minor } = decodeQuoteNumber(quoteNumber);
+export const formatQuoteNumber = (quote_no) => {
+  const { customerId, status, major, minor } = decodeQuoteNumber(quote_no);
   return (
     customerId.toString().padStart(5, '0') +
     status.toString() +

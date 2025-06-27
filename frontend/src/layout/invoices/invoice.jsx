@@ -34,7 +34,7 @@ const Invoices = () => {
   }, []);
 
   const columns = [
-    { field: "id", headerName: "Invoice Number", flex: 1 },
+    { field: "quote_no", headerName: "Invoice Number", flex: 1 },
     {
       field: "date",
       headerName: "date",

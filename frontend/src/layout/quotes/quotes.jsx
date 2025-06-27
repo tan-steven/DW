@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 import axios from "../../utils/axiosConfig";
 import CreateQuote from "./createQuote";
 import QuoteDetails from "./quoteDetails";
-import { formatQuoteNumber } from "../../utils/quoteNum";
 
 const Quotes = () => {
   const theme = useTheme();
@@ -42,20 +41,31 @@ const Quotes = () => {
     const fetchQuotes = async () => {
       try {
         const response = await axios.get("/api/quotes");
-        setQuotes(response.data);
+
+        const enhanced = response.data.map(q => {
+          const big = BigInt(q.quote_no) % 10_000_000n;
+          const status = Number(big / 1_000_000n);
+          return { ...q, status };
+        });
+
+        // Sort: Quotes (status 0) come before Orders (status 1)
+        enhanced.sort((a, b) => a.status - b.status);
+
+        setQuotes(enhanced);
       } catch (err) {
         console.log("Error fetching quote from frontend", err);
       }
     };
+
     fetchQuotes();
   }, []);
 
+
   const columns = [
     {
-      field: "formatted_quote_no",
+      field: "quote_no",
       headerName: "Quote Number",
       flex: 1,
-      renderCell: (params) => formatQuoteNumber(params.row.quote_no),
     },
     {
       field: "date",
@@ -87,6 +97,25 @@ const Quotes = () => {
           ${params.row.sub_total}
         </Typography>
       ),
+    },
+    {
+      field: "status",
+      headerName: "Status",
+      flex: 1,
+      renderCell: (params) => {
+        const status = (BigInt(params.row.quote_no) % 10_000_000n) / 1_000_000n; // extract first digit
+        return (
+          <Typography>
+            {status === 0n
+              ? "Quote"
+              : status === 1n
+              ? "Order"
+              : status === 2n
+              ? "Invoice"
+              : "Unknown"}
+          </Typography>
+        );
+      }
     },
     {
       field: "actions",
