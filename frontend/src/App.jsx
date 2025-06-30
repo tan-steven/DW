@@ -12,6 +12,7 @@ import CustomerPage from './layout/customers/customer';
 import PrintQuote from './utils/PrintQuote';
 import LoginPage from './layout/login/loginPage';
 import UserForm from './layout/team/userForm';
+import Deliveries from './layout/Deliveries/deliveries';
 
 const App = () => {
   const [theme, colorMode] = useMode();
@@ -41,6 +42,7 @@ const App = () => {
                   <Route path="/customers" element={<CustomerPage />} />
                   <Route path="/manage-team" element={<UserForm />} />
                   <Route path="/print-quote/:type/:quote_no" element={<PrintQuote />} />
+                  <Route path='/deliveries' element={<Deliveries/>}/>
                   <Route path="*" element={<Navigate to="/" />} />
                 </>
               )}

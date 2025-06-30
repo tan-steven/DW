@@ -15,8 +15,8 @@ const Invoices = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedInvoiceIds, setSelectedInvoiceIds] = useState([]);
 
-  const handleOpenModal = (id) => {
-    const found = invoices.find(i => i.id === id);
+  const handleOpenModal = (quote_no) => {
+    const found = invoices.find(i => i.quote_no === quote_no);
     setSelectedInvoice(found);
     setModalOpen(true);
   };
@@ -71,13 +71,42 @@ const Invoices = () => {
           variant="outlined"
           color="secondary"
           size="small"
-          onClick={() => handleOpenModal(params.row.id)}
+          onClick={() => handleOpenModal(params.row.quote_no)}
         >
           View Details
         </Button>
       ),
     },
   ];
+
+  const handleSubmitToDeliveries = async () => {
+    if (!Array.isArray(selectedInvoiceIds) || selectedInvoiceIds.length === 0) return;
+
+    const selectedInvoices = invoices.filter(i =>
+      selectedInvoiceIds.includes(i.quote_no.toString())
+    );
+
+    if (selectedInvoices.length === 0) {
+      alert("Please select at least one invoice.");
+      return;
+    }
+    try {
+      for (const invoice of selectedInvoices) {
+        await axios.post("/api/deliveries", {
+          invoice_no: invoice.quote_no,
+          customer: invoice.customer,
+          total: invoice.total,
+          sub_total: invoice.sub_total,
+          date: invoice.date,
+        });
+      }
+      alert("Selected invoices submitted to deliveries");
+      window.location.reload();
+    } catch (err) {
+      console.error("Failed to submit invoices to deliveries", err);
+      alert("Failed to submit invoices to deliveries");
+    }
+  };
 
   return (
     <Box m="20px">
@@ -105,14 +134,25 @@ const Invoices = () => {
           },
         }}
       >
+        <Box display="flex" justifyContent="space-between" mb={2} gap={2}>
+          <Button
+            variant="contained"
+            color="secondary"
+            disabled={selectedInvoiceIds.length === 0}
+            onClick={handleSubmitToDeliveries}
+          >
+            Submit Selected Invoices to Delivery Schedule
+          </Button>
+        </Box>
+
         <DataGrid
           checkboxSelection
           rows={invoices}
           columns={columns}
-          getRowId={(row) => row.id.toString()}
+          getRowId={(row) => row.quote_no.toString()}
           onRowSelectionModelChange={(selectionModel) => {
-            const selectedIds = Array.from(selectionModel);
-            setSelectedInvoiceIds(selectedIds);
+            const selectedIds = Array.from(selectionModel.ids || []);
+            setSelectedInvoiceIds(selectedIds.map(id => id.toString()));
           }}
         />
 
