@@ -14,7 +14,16 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   Invoice.init({
-    quote_no: DataTypes.INTEGER,
+    id: {
+      allowNull: false,
+      autoIncrement: true,
+      primaryKey: true,
+      type: DataTypes.INTEGER,
+    },
+    quote_no:{
+      unique: true,
+      type: DataTypes.INTEGER,
+    },
     date: DataTypes.DATE,
     customer: DataTypes.STRING,
     sub_total: DataTypes.DECIMAL,

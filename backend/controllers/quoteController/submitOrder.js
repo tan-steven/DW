@@ -56,6 +56,8 @@ router.post('/:id/submit-as-order', async (req, res) => {
       GL: detail.GL,
       GRD: detail.GRD,
       SC: detail.SC,
+      quantity: detail.quantity,
+      price: detail.price,
     }));
 
     await OrderDetail.bulkCreate(orderDetails, { transaction: t });

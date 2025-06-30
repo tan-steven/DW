@@ -24,7 +24,9 @@ module.exports = (sequelize, DataTypes) => {
     at: DataTypes.INTEGER,
     GL: DataTypes.STRING,
     GRD: DataTypes.BOOLEAN,
-    SC: DataTypes.STRING
+    SC: DataTypes.STRING,
+    quantity: DataTypes.INTEGER,
+    price: DataTypes.INTEGER,
   }, {
     sequelize,
     modelName: 'QuoteDetails',

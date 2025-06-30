@@ -10,6 +10,7 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       quote_no: {
+        unique: true,
         type: Sequelize.BIGINT
       },
       date: {

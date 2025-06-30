@@ -69,14 +69,14 @@ const PrintQuote = () => {
           {details.map((item, i) => (
             <tr key={i} style={{ borderBottom: "1px solid #ccc" }}>
               <td>{i + 1}</td>
-              <td>{item.unit}</td>
+              <td>{item.quantity}</td>
               <td>
-                {item.material} {item.product_type} {item.CL}<br />
-                {item.width}" x {item.height}" @ {item.at} units<br />
-                {item.GL} {item.GRD ? "WITH GRD" : "NO GRD"} {item.SC}
+                {item.material} {item.product_type} {item.CL}
+                {item.width}" x {item.height}" @ {item.at} units
+                {item.GL} {item.GRD ? "WITH GRID" : "NO GRID"} {item.SC}
               </td>
-              <td align="right">${parseFloat(record.total / details.length).toFixed(2)}</td>
-              <td align="right">${(record.total / details.length).toFixed(2)}</td>
+              <td align="right">${parseFloat(item.price).toFixed(2)}</td>
+              <td align="right">${(item.price * item.quantity).toFixed(2)}</td>
             </tr>
           ))}
         </tbody>

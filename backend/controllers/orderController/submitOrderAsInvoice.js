@@ -65,6 +65,8 @@ router.post('/:quote_no/submit-as-invoice', async (req, res) => {
       GL: detail.GL,
       GRD: detail.GRD,
       SC: detail.SC,
+      quantity: detail.quantity,
+      price: detail.price,
     }));
 
     await InvoiceDetail.bulkCreate(invoiceDetails, { transaction: t });

@@ -10,7 +10,13 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       order_id: {
-        type: Sequelize.BIGINT
+        type: Sequelize.BIGINT,
+        references:{
+          model: 'orders',
+          key: 'quote_no',
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'SET NULL'
       },
       material: {
         type: Sequelize.STRING
@@ -42,6 +48,12 @@ module.exports = {
       SC: {
         type: Sequelize.STRING
       },
+      quantity: {
+        type: Sequelize.INTEGER
+      },
+      price: {
+        type: Sequelize.INTEGER
+      }
     });
   },
   async down(queryInterface, Sequelize) {
