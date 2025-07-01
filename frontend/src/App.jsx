@@ -13,6 +13,7 @@ import PrintQuote from './utils/PrintQuote';
 import LoginPage from './layout/login/loginPage';
 import UserForm from './layout/team/userForm';
 import Deliveries from './layout/Deliveries/deliveries';
+import Formulas from './layout/formulas/formulas';
 
 const App = () => {
   const [theme, colorMode] = useMode();
@@ -43,6 +44,7 @@ const App = () => {
                   <Route path="/manage-team" element={<UserForm />} />
                   <Route path="/print-quote/:type/:quote_no" element={<PrintQuote />} />
                   <Route path='/deliveries' element={<Deliveries/>}/>
+                  <Route path='/formulas' element={<Formulas/>}/>
                   <Route path="*" element={<Navigate to="/" />} />
                 </>
               )}

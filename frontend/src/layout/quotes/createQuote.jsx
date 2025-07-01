@@ -13,12 +13,12 @@ import {
   AccordionSummary,
   AccordionDetails,
 } from "@mui/material";
-
 import { ExpandMore } from '@mui/icons-material';
 import axios from "../../utils/axiosConfig";
 
 const CreateQuote = ({ onQuoteCreated, initialData, open: propOpen, onClose }) => {
   const [customerOptions, setCustomerOptions] = useState([]);
+  const [formulas, setFormulas] = useState([]);
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     date: "",
@@ -43,17 +43,23 @@ const CreateQuote = ({ onQuoteCreated, initialData, open: propOpen, onClose }) =
     ],
   });
 
+  const quoteDetailFields = [
+    "material", "product_type", "CL", "unit", "width",
+    "height", "at", "GL", "GRD", "SC", "quantity", "price"
+  ];
+
   useEffect(() => {
     const fetchCustomers = async () => {
-      try {
-        const response = await axios.get("/api/customers");
-        setCustomerOptions(response.data);
-      } catch (error) {
-        console.error("Error fetching customers:", error);
-      }
+      const response = await axios.get("/api/customers");
+      setCustomerOptions(response.data);
+    };
+    const fetchFormulas = async () => {
+      const res = await axios.get("/api/formulas");
+      setFormulas(res.data);
     };
 
     fetchCustomers();
+    fetchFormulas();
   }, []);
 
   useEffect(() => {
@@ -61,7 +67,7 @@ const CreateQuote = ({ onQuoteCreated, initialData, open: propOpen, onClose }) =
       setFormData({
         ...initialData,
         quoteDetails: initialData.quoteDetails || [],
-        duplicate: true, // ensure duplicate flag is set for backend
+        duplicate: true,
       });
       setOpen(true);
     }
@@ -83,15 +89,27 @@ const CreateQuote = ({ onQuoteCreated, initialData, open: propOpen, onClose }) =
     const details = [...formData.quoteDetails];
     details[index][name] = type === "checkbox" ? checked : value;
 
-    // Calculate item total
     const quantity = parseFloat(details[index].quantity) || 0;
     const price = parseFloat(details[index].price) || 0;
     details[index].item_total = quantity * price;
 
     setFormData({ ...formData, quoteDetails: details });
-
-    // Recalculate overall totals
     recalculateTotals(details);
+  };
+
+  const handleFormulaSelect = (index, selectedFormula) => {
+    if (selectedFormula) {
+      const details = [...formData.quoteDetails];
+      details[index] = {
+        ...details[index],
+        ...quoteDetailFields.reduce((acc, field) => {
+          acc[field] = selectedFormula[field] ?? details[index][field];
+          return acc;
+        }, {}),
+      };
+      setFormData({ ...formData, quoteDetails: details });
+      recalculateTotals(details);
+    }
   };
 
   const handleAddDetailLine = () => {
@@ -154,7 +172,7 @@ const CreateQuote = ({ onQuoteCreated, initialData, open: propOpen, onClose }) =
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            width: 700,
+            width: 800,
             bgcolor: "background.paper",
             borderRadius: 2,
             boxShadow: 24,
@@ -201,18 +219,43 @@ const CreateQuote = ({ onQuoteCreated, initialData, open: propOpen, onClose }) =
 
                 <AccordionDetails>
                   <Grid container spacing={2}>
-                    <Grid item xs={6}><TextField fullWidth name="material" label="Material" value={item.material} onChange={(e) => handleDetailChange(index, e)} /></Grid>
-                    <Grid item xs={6}><TextField fullWidth name="product_type" label="Product Type" value={item.product_type} onChange={(e) => handleDetailChange(index, e)} /></Grid>
-                    <Grid item xs={6}><TextField fullWidth name="CL" label="CL" value={item.CL} onChange={(e) => handleDetailChange(index, e)} /></Grid>
-                    <Grid item xs={6}><TextField fullWidth name="unit" label="Unit" type="number" value={item.unit} onChange={(e) => handleDetailChange(index, e)} /></Grid>
-                    <Grid item xs={6}><TextField fullWidth name="width" label="Width" type="number" value={item.width} onChange={(e) => handleDetailChange(index, e)} /></Grid>
-                    <Grid item xs={6}><TextField fullWidth name="height" label="Height" type="number" value={item.height} onChange={(e) => handleDetailChange(index, e)} /></Grid>
-                    <Grid item xs={6}><TextField fullWidth name="at" label="AT" type="number" value={item.at} onChange={(e) => handleDetailChange(index, e)} /></Grid>
-                    <Grid item xs={6}><TextField fullWidth name="GL" label="GL" value={item.GL} onChange={(e) => handleDetailChange(index, e)} /></Grid>
-                    <Grid item xs={6}><FormControlLabel control={<Checkbox checked={item.GRD} onChange={(e) => handleDetailChange(index, e)} name="GRD" />} label="GRD" /></Grid>
-                    <Grid item xs={6}><TextField fullWidth name="SC" label="SC" value={item.SC} onChange={(e) => handleDetailChange(index, e)} /></Grid>
-                    <Grid item xs={6}><TextField fullWidth name="quantity" label="Quantity" type="number" value={item.quantity} onChange={(e) => handleDetailChange(index, e)} /></Grid>
-                    <Grid item xs={6}><TextField fullWidth name="price" label="Unit Price" type="number" value={item.price} onChange={(e) => handleDetailChange(index, e)} /></Grid>
+                    <Grid item xs={12}>
+                      <Autocomplete
+                        options={formulas}
+                        getOptionLabel={(option) => option.name}
+                        onChange={(event, selectedFormula) => handleFormulaSelect(index, selectedFormula)}
+                        renderInput={(params) => (
+                          <TextField {...params} label="Select Formula" variant="outlined" />
+                        )}
+                      />
+                    </Grid>
+
+                    {quoteDetailFields.map((key) => (
+                      <Grid item xs={6} key={key}>
+                        {typeof item[key] === "boolean" ? (
+                          <FormControlLabel
+                            control={
+                              <Checkbox
+                                checked={item[key]}
+                                onChange={(e) => handleDetailChange(index, e)}
+                                name={key}
+                              />
+                            }
+                            label={key}
+                          />
+                        ) : (
+                          <TextField
+                            fullWidth
+                            name={key}
+                            label={key}
+                            type={typeof item[key] === "number" ? "number" : "text"}
+                            value={item[key]}
+                            onChange={(e) => handleDetailChange(index, e)}
+                          />
+                        )}
+                      </Grid>
+                    ))}
+
                     <Grid item xs={6}>
                       <Typography variant="body2">
                         <strong>Line Total:</strong> ${(item.quantity * item.price).toFixed(2)}
