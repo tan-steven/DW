@@ -187,95 +187,84 @@ const CreateQuotePage = () => {
       </Paper>
 
       <Grid container spacing={2}>
-        {/* Entry Form */}
-        <Grid item xs={6} md={5}>
-          <Paper elevation={2} sx={{ p: 2 }}>
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+        {/* Entry Form - Left Column */}
+        <Grid item xs={12} md={4} lg={3}>
+          <Paper elevation={2} sx={{ p: 2, height: 'calc(100vh - 260px)', overflowY: 'auto' }}>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
               <Typography variant="h6">{editingIndex !== null ? 'Edit Window' : 'Add New Window'}</Typography>
               {editingIndex !== null && (
-                <Button size="small" onClick={handleCancelEdit}>Cancel Edit</Button>
+                <Button size="small" onClick={handleCancelEdit}>Cancel</Button>
               )}
             </Box>
-            <Grid container spacing={1}>
-              <Grid item xs={12}>
-                <FormControl fullWidth size="small" sx={{ mb: 1 }}>
-                  <InputLabel>Material</InputLabel>
-                  <Select id="material" value={windowEntry.material} onChange={e => { handleWindowEntryChange('material', e.target.value); focusNext('productLine'); }} label="Material">
-                    {MATERIAL_OPTIONS.map(o => <MenuItem key={o} value={o}>{o}</MenuItem>)}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12}>
-                <FormControl fullWidth size="small" sx={{ mb: 1 }}>
-                  <InputLabel>Product Line</InputLabel>
-                  <Select id="productLine" value={windowEntry.product_line} onChange={e => { handleWindowEntryChange('product_line', e.target.value); focusNext('productType'); }} label="Product Line">
-                    {PRODUCT_LINE_OPTIONS.map(o => <MenuItem key={o} value={o}>{o}</MenuItem>)}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12}>
-                <FormControl fullWidth size="small" sx={{ mb: 1 }}>
-                  <InputLabel>Product Type</InputLabel>
-                  <Select id="productType" value={windowEntry.product_type} onChange={e => { handleWindowEntryChange('product_type', e.target.value); focusNext('color'); }} label="Product Type">
-                    {PRODUCT_TYPE_OPTIONS.map(o => <MenuItem key={o} value={o}>{o}</MenuItem>)}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12}>
-                <FormControl fullWidth size="small" sx={{ mb: 1 }}>
-                  <InputLabel>Color (CL)</InputLabel>
-                  <Select id="color" value={windowEntry.CL} onChange={e => { handleWindowEntryChange('CL', e.target.value); focusNext('width'); }} label="Color (CL)">
-                    {CL_OPTIONS.map(o => <MenuItem key={o} value={o}>{o}</MenuItem>)}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={6}>
-                <TextField fullWidth size="small" label="Width (in)" type="number" sx={{ mb: 1 }} id="width" value={windowEntry.width} onChange={e => { handleWindowEntryChange('width', e.target.value);}} onKeyDown={k => {if(k.key==='Enter'){focusNext('height');}}}/>
-              </Grid>
-              <Grid item xs={6}>
-                <TextField fullWidth size="small" label="Height (in)" type="number" sx={{ mb: 1 }} id="height" value={windowEntry.height} onChange={e => { handleWindowEntryChange('height', e.target.value);}} onKeyDown={k => {if(k.key==='Enter'){focusNext('glass');}}}/>
-              </Grid>
-              <Grid item xs={12}>
-                <FormControl fullWidth size="small" sx={{ mb: 1 }}>
-                  <InputLabel>Glass (GL)</InputLabel>
-                  <Select id="glass" value={windowEntry.GL} onChange={e => { handleWindowEntryChange('GL', e.target.value); focusNext('screen'); }} label="Glass (GL)">
-                    {GL_OPTIONS.map(o => <MenuItem key={o} value={o}>{o}</MenuItem>)}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12}>
-                <FormControl fullWidth size="small" sx={{ mb: 1 }}>
-                  <InputLabel>Screen (SC)</InputLabel>
-                  <Select id="screen" value={windowEntry.SC} onChange={e => { handleWindowEntryChange('SC', e.target.value); focusNext('quantity'); }} label="Screen (SC)">
-                    {SC_OPTIONS.map(o => <MenuItem key={o} value={o}>{o}</MenuItem>)}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12}>
-                <FormControlLabel control={<Switch size="small" checked={windowEntry.GRD} onChange={e => handleWindowEntryChange('GRD', e.target.checked)} />} label="Grids?" sx={{ mb: 1 }} />
-              </Grid>
-              <Grid item xs={6}>
-                <TextField fullWidth size="small" label="Quantity" type="number" sx={{ mb: 1 }} id="quantity" value={windowEntry.quantity} onChange={e => { handleWindowEntryChange('quantity', e.target.value); }} onKeyDown={k => {if(k.key==='Enter'){focusNext('price');}}}/>
-              </Grid>
-              <Grid item xs={6}>
-                <TextField fullWidth size="small" label="Unit Price" type="number" sx={{ mb: 1 }} id="price" value={windowEntry.price} onChange={e => { handleWindowEntryChange('price', e.target.value); }} />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField fullWidth size="small" label="Line Total" sx={{ mb: 2 }} id="lineTotal" value={`$${((windowEntry.quantity||0)*(windowEntry.price||0)).toFixed(2)}`} InputProps={{ readOnly: true }} />
-              </Grid>
-              <Grid item xs={12}>
-                <Button fullWidth size="small" variant="contained" id="createWindow" onClick={handleAddWindow}>
-                  {editingIndex !== null ? 'Update Window' : 'Create Window'}
-                </Button>
-              </Grid>
-            </Grid>
+            
+            <Box display="flex" flexDirection="column" gap={1.5}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Material</InputLabel>
+                <Select id="material" value={windowEntry.material} onChange={e => { handleWindowEntryChange('material', e.target.value); focusNext('productLine'); }} label="Material">
+                  {MATERIAL_OPTIONS.map(o => <MenuItem key={o} value={o}>{o}</MenuItem>)}
+                </Select>
+              </FormControl>
+
+              <FormControl fullWidth size="small">
+                <InputLabel>Product Line</InputLabel>
+                <Select id="productLine" value={windowEntry.product_line} onChange={e => { handleWindowEntryChange('product_line', e.target.value); focusNext('productType'); }} label="Product Line">
+                  {PRODUCT_LINE_OPTIONS.map(o => <MenuItem key={o} value={o}>{o}</MenuItem>)}
+                </Select>
+              </FormControl>
+
+              <FormControl fullWidth size="small">
+                <InputLabel>Product Type</InputLabel>
+                <Select id="productType" value={windowEntry.product_type} onChange={e => { handleWindowEntryChange('product_type', e.target.value); focusNext('color'); }} label="Product Type">
+                  {PRODUCT_TYPE_OPTIONS.map(o => <MenuItem key={o} value={o}>{o}</MenuItem>)}
+                </Select>
+              </FormControl>
+
+              <FormControl fullWidth size="small">
+                <InputLabel>Color (CL)</InputLabel>
+                <Select id="color" value={windowEntry.CL} onChange={e => { handleWindowEntryChange('CL', e.target.value); focusNext('width'); }} label="Color (CL)">
+                  {CL_OPTIONS.map(o => <MenuItem key={o} value={o}>{o}</MenuItem>)}
+                </Select>
+              </FormControl>
+
+              <Box display="flex" gap={1}>
+                <TextField fullWidth size="small" label="Width (in)" type="number" id="width" value={windowEntry.width} onChange={e => { handleWindowEntryChange('width', e.target.value);}} onKeyDown={k => {if(k.key==='Enter'){focusNext('height');}}}/>
+                <TextField fullWidth size="small" label="Height (in)" type="number" id="height" value={windowEntry.height} onChange={e => { handleWindowEntryChange('height', e.target.value);}} onKeyDown={k => {if(k.key==='Enter'){focusNext('glass');}}}/>
+              </Box>
+
+              <FormControl fullWidth size="small">
+                <InputLabel>Glass (GL)</InputLabel>
+                <Select id="glass" value={windowEntry.GL} onChange={e => { handleWindowEntryChange('GL', e.target.value); focusNext('screen'); }} label="Glass (GL)">
+                  {GL_OPTIONS.map(o => <MenuItem key={o} value={o}>{o}</MenuItem>)}
+                </Select>
+              </FormControl>
+
+              <FormControl fullWidth size="small">
+                <InputLabel>Screen (SC)</InputLabel>
+                <Select id="screen" value={windowEntry.SC} onChange={e => { handleWindowEntryChange('SC', e.target.value); focusNext('quantity'); }} label="Screen (SC)">
+                  {SC_OPTIONS.map(o => <MenuItem key={o} value={o}>{o}</MenuItem>)}
+                </Select>
+              </FormControl>
+
+              <FormControlLabel control={<Switch size="small" checked={windowEntry.GRD} onChange={e => handleWindowEntryChange('GRD', e.target.checked)} />} label="Grids?" />
+
+              <Box display="flex" gap={1}>
+                <TextField fullWidth size="small" label="Quantity" type="number" id="quantity" value={windowEntry.quantity} onChange={e => { handleWindowEntryChange('quantity', e.target.value); }} onKeyDown={k => {if(k.key==='Enter'){focusNext('price');}}}/>
+                <TextField fullWidth size="small" label="Unit Price" type="number" id="price" value={windowEntry.price} onChange={e => { handleWindowEntryChange('price', e.target.value); }} />
+              </Box>
+
+              <TextField fullWidth size="small" label="Line Total" id="lineTotal" value={`$${((windowEntry.quantity||0)*(windowEntry.price||0)).toFixed(2)}`} InputProps={{ readOnly: true }} />
+
+              <Button fullWidth variant="contained" id="createWindow" onClick={handleAddWindow}>
+                {editingIndex !== null ? 'Update Window' : 'Create Window'}
+              </Button>
+            </Box>
           </Paper>
         </Grid>
         
-        {/* Summary with image on side */}
-        <Grid item xs={12} md={7}>
+        {/* Summary - Right Column */}
+        <Grid item xs={12} md={8} lg={9}>
           <Paper elevation={2} sx={{ p: 2, height: 'calc(100vh - 260px)', overflowY: 'auto' }}>
-            <Typography variant="h6" mb={1}>Windows Added</Typography>
+            <Typography variant="h6" mb={2}>Windows Added</Typography>
             {formData.quoteDetails.map((detail, idx) => (
               <Card key={idx} sx={{ mb: 1, p: 1, backgroundColor: editingIndex === idx ? 'action.selected' : 'inherit' }}>
                 <Grid container spacing={1} alignItems="center">
