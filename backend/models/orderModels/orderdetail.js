@@ -16,17 +16,16 @@ module.exports = (sequelize, DataTypes) => {
   OrderDetail.init({
     order_id: DataTypes.INTEGER,
     material: DataTypes.STRING,
+    product_line: DataTypes.STRING,
     product_type: DataTypes.STRING,
     CL: DataTypes.STRING,
-    unit: DataTypes.INTEGER,
     width: DataTypes.DOUBLE,
     height: DataTypes.DOUBLE,
-    at: DataTypes.INTEGER,
     GL: DataTypes.STRING,
-    GRD: DataTypes.BOOLEAN,
+    GRD: DataTypes.STRING,
     SC: DataTypes.STRING,
     quantity: DataTypes.INTEGER,
-    price: DataTypes.INTEGER
+    price: DataTypes.DOUBLE
   }, {
     sequelize,
     modelName: 'OrderDetail',

@@ -1,290 +1,332 @@
-import { Autocomplete } from "@mui/material";
+import { Autocomplete, MenuItem, Select, FormControl, InputLabel, Switch, FormControlLabel, IconButton } from "@mui/material";
 import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Box,
   Button,
-  Modal,
   TextField,
   Typography,
   Grid,
-  FormControlLabel,
-  Checkbox,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
+  Card,
+  Paper,
+  Divider,
 } from "@mui/material";
-import { ExpandMore } from '@mui/icons-material';
+import { Delete as DeleteIcon, Edit as EditIcon } from "@mui/icons-material";
 import axios from "../../utils/axiosConfig";
+import Header from "../../components/header";
 
-const CreateQuote = ({ onQuoteCreated, initialData, open: propOpen, onClose }) => {
-  const [customerOptions, setCustomerOptions] = useState([]);
-  const [formulas, setFormulas] = useState([]);
-  const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    date: "",
-    customer: "",
-    total: "",
-    sub_total: "",
-    quoteDetails: [
-      {
-        material: "",
-        product_type: "",
-        CL: "",
-        unit: 0,
-        width: 0,
-        height: 0,
-        at: 0,
-        GL: "",
-        GRD: false,
-        SC: "",
-        quantity: 1,
-        price: 0,
-      },
-    ],
-  });
+const MATERIAL_OPTIONS = ["Vinyl", "Aluminum", "Wood", "Fiberglass", "Composite", "Steel"];
+const PRODUCT_TYPE_OPTIONS = ["Single Hung", "Double Hung", "Casement", "Sliding", "Awning", "Picture/Fixed", "Bay Window", "Bow Window"];
+const CL_OPTIONS = ["White", "Black", "Bronze", "Silver", "Beige", "Brown", "Custom Color"];
+const GL_OPTIONS = ["Clear", "Low-E", "Tempered", "Laminated", "Tinted Bronze", "Tinted Gray", "Frosted", "Double Pane", "Triple Pane"];
+const SC_OPTIONS = ["Half Screen", "Full Screen", "No Screen", "Retractable Screen"];
+const PRODUCT_LINE_OPTIONS = ["1000 Series", "4000 Series", "5000 Series", "6000 Series", "7000 Series", "8000 Series", "9000 Series"];
 
-  const quoteDetailFields = [
-    "material", "product_type", "CL", "unit", "width",
-    "height", "at", "GL", "GRD", "SC", "quantity", "price"
-  ];
+const FRAME_COLORS = {
+  White: '#FFFFFF', Black: '#000000', Bronze: '#CD7F32', Silver: '#C0C0C0',
+  Beige: '#F5F5DC', Brown: '#A52A2A', 'Custom Color': '#DDDDDD',
+};
+const GLASS_COLORS = {
+  Clear: 'rgba(173,216,230,0.3)', 'Low-E': 'rgba(173,216,230,0.5)', Tempered: 'rgba(173,216,230,0.6)',
+  Laminated: 'rgba(173,216,230,0.4)', 'Tinted Bronze': 'rgba(165,42,42,0.5)',
+  'Tinted Gray': 'rgba(128,128,128,0.5)', Frosted: 'rgba(255,255,255,0.7)',
+  'Double Pane': 'rgba(173,216,230,0.2)', 'Triple Pane': 'rgba(173,216,230,0.15)',
+};
 
-  useEffect(() => {
-    const fetchCustomers = async () => {
-      const response = await axios.get("/api/customers");
-      setCustomerOptions(response.data);
-    };
-    const fetchFormulas = async () => {
-      const res = await axios.get("/api/formulas");
-      setFormulas(res.data);
-    };
-
-    fetchCustomers();
-    fetchFormulas();
-  }, []);
-
-  useEffect(() => {
-    if (initialData) {
-      setFormData({
-        ...initialData,
-        quoteDetails: initialData.quoteDetails || [],
-        duplicate: true,
-      });
-      setOpen(true);
-    }
-  }, [initialData]);
-
-  useEffect(() => {
-    if (propOpen !== undefined) {
-      setOpen(propOpen);
-    }
-  }, [propOpen]);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
-  const handleDetailChange = (index, e) => {
-    const { name, value, type, checked } = e.target;
-    const details = [...formData.quoteDetails];
-    details[index][name] = type === "checkbox" ? checked : value;
-
-    const quantity = parseFloat(details[index].quantity) || 0;
-    const price = parseFloat(details[index].price) || 0;
-    details[index].item_total = quantity * price;
-
-    setFormData({ ...formData, quoteDetails: details });
-    recalculateTotals(details);
-  };
-
-  const handleFormulaSelect = (index, selectedFormula) => {
-    if (selectedFormula) {
-      const details = [...formData.quoteDetails];
-      details[index] = {
-        ...details[index],
-        ...quoteDetailFields.reduce((acc, field) => {
-          acc[field] = selectedFormula[field] ?? details[index][field];
-          return acc;
-        }, {}),
-      };
-      setFormData({ ...formData, quoteDetails: details });
-      recalculateTotals(details);
-    }
-  };
-
-  const handleAddDetailLine = () => {
-    const newDetails = [
-      ...formData.quoteDetails,
-      {
-        material: "",
-        product_type: "",
-        CL: "",
-        unit: 0,
-        width: 0,
-        height: 0,
-        at: 0,
-        GL: "",
-        GRD: false,
-        SC: "",
-        quantity: 1,
-        price: 0,
-      },
-    ];
-    setFormData({ ...formData, quoteDetails: newDetails });
-    recalculateTotals(newDetails);
-  };
-
-  const recalculateTotals = (details) => {
-    const subTotal = details.reduce((sum, item) => {
-      const quantity = parseFloat(item.quantity) || 0;
-      const price = parseFloat(item.price) || 0;
-      return sum + quantity * price;
-    }, 0);
-
-    setFormData((prev) => ({
-      ...prev,
-      sub_total: Number(subTotal.toFixed(2)),
-      total: Number(subTotal.toFixed(2)),
-    }));
-  };
-
-  const handleSubmit = async () => {
-    try {
-      await axios.post("/api/quotes", formData);
-      onQuoteCreated();
-      setOpen(false);
-      if (onClose) onClose();
-    } catch (err) {
-      console.log("Error creating quote from frontend", err);
-    }
-  };
-
+const WindowImage = ({ detail }) => {
+  const frameColor = FRAME_COLORS[detail.CL] || FRAME_COLORS['Custom Color'];
+  const glassColor = GLASS_COLORS[detail.GL] || GLASS_COLORS['Clear'];
   return (
-    <Box>
-      <Button variant="contained" color="secondary" onClick={() => setOpen(true)}>
-        Add New Quote
-      </Button>
-
-      <Modal open={open} onClose={() => { setOpen(false); if (onClose) onClose(); }}>
-        <Box
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: 800,
-            bgcolor: "background.paper",
-            borderRadius: 2,
-            boxShadow: 24,
-            p: 4,
-            maxHeight: "90vh",
-            overflowY: "auto",
-          }}
-        >
-          <Typography variant="h6" mb={3}>Create a New Quote</Typography>
-          <Grid container spacing={2}>
-            <Grid item xs={6}>
-              <TextField fullWidth name="date" label="Date" type="date" value={formData.date} onChange={handleChange} InputLabelProps={{ shrink: true }} />
-            </Grid>
-            <Grid item xs={6}>
-              <Autocomplete
-                options={customerOptions}
-                getOptionLabel={(option) => option.name}
-                isOptionEqualToValue={(option, value) => option.id === value.id}
-                value={customerOptions.find(c => c.name === formData.customer) || null}
-                onChange={(event, newValue) => {
-                  if (newValue) {
-                    setFormData({
-                      ...formData,
-                      customer: newValue.name,
-                      customerId: newValue.id
-                    });
-                  } else {
-                    setFormData({ ...formData, customer: "", customerId: "" });
-                  }
-                }}
-                renderInput={(params) => (
-                  <TextField {...params} label="Customer" variant="outlined" />
-                )}
-              />
-            </Grid>
-
-            {formData.quoteDetails.map((item, index) => (
-              <Accordion key={index} sx={{ width: '100%', mb: 2 }}>
-                <AccordionSummary expandIcon={<ExpandMore />}>
-                  <Typography>
-                    Line #{index + 1} — {item.material || "New Detail"}
-                  </Typography>
-                </AccordionSummary>
-
-                <AccordionDetails>
-                  <Grid container spacing={2}>
-                    <Grid item xs={12}>
-                      <Autocomplete
-                        options={formulas}
-                        getOptionLabel={(option) => option.name}
-                        onChange={(event, selectedFormula) => handleFormulaSelect(index, selectedFormula)}
-                        renderInput={(params) => (
-                          <TextField {...params} label="Select Formula" variant="outlined" />
-                        )}
-                      />
-                    </Grid>
-
-                    {quoteDetailFields.map((key) => (
-                      <Grid item xs={6} key={key}>
-                        {typeof item[key] === "boolean" ? (
-                          <FormControlLabel
-                            control={
-                              <Checkbox
-                                checked={item[key]}
-                                onChange={(e) => handleDetailChange(index, e)}
-                                name={key}
-                              />
-                            }
-                            label={key}
-                          />
-                        ) : (
-                          <TextField
-                            fullWidth
-                            name={key}
-                            label={key}
-                            type={typeof item[key] === "number" ? "number" : "text"}
-                            value={item[key]}
-                            onChange={(e) => handleDetailChange(index, e)}
-                          />
-                        )}
-                      </Grid>
-                    ))}
-
-                    <Grid item xs={6}>
-                      <Typography variant="body2">
-                        <strong>Line Total:</strong> ${(item.quantity * item.price).toFixed(2)}
-                      </Typography>
-                    </Grid>
-                  </Grid>
-                </AccordionDetails>
-              </Accordion>
-            ))}
-
-            <Grid item xs={6}>
-              <TextField fullWidth name="sub_total" label="Sub Total" type="number" value={formData.sub_total} onChange={handleChange} />
-            </Grid>
-            <Grid item xs={6}>
-              <TextField fullWidth name="total" label="Total" type="number" value={formData.total} onChange={handleChange} />
-            </Grid>
-
-            <Grid item xs={12}>
-              <Button variant="outlined" onClick={handleAddDetailLine}>Add Line</Button>
-            </Grid>
-
-            <Grid item xs={12}>
-              <Button fullWidth variant="contained" color="secondary" onClick={handleSubmit}>Submit</Button>
-            </Grid>
-          </Grid>
-        </Box>
-      </Modal>
+    <Box sx={{ width: 100, height: 100, flexShrink: 0 }}>
+      <svg width="100%" height="100%" viewBox="0 0 100 100">
+        <rect x="0" y="0" width="100" height="100" fill="none" stroke={frameColor} strokeWidth="6" />
+        <rect x="8" y="8" width="84" height="84" fill={glassColor} />
+        {detail.product_type === 'Double Hung' && <line x1="0" y1="50" x2="100" y2="50" stroke={frameColor} strokeWidth="3" />}
+        {detail.product_type === 'Sliding' && <line x1="50" y1="0" x2="50" y2="100" stroke={frameColor} strokeWidth="3" />}
+      </svg>
     </Box>
   );
 };
 
-export default CreateQuote;
+const CreateQuotePage = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const initialData = location.state?.initialData;
+
+  const [customerOptions, setCustomerOptions] = useState([]);
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [formData, setFormData] = useState({ date: new Date().toISOString().split('T')[0], customer: "", total: 0, sub_total: 0, quoteDetails: [] });
+  const [windowEntry, setWindowEntry] = useState({ material: "", product_line: "", product_type: "", CL: "", unit: '', width: '', height: '', at: '', GL: "", GRD: false, SC: "", quantity: '', price: '' });
+  const [editingIndex, setEditingIndex] = useState(null);
+
+  useEffect(() => { 
+    axios.get("/api/customers").then(res => setCustomerOptions(res.data)).catch(console.error); 
+  }, []);
+
+  useEffect(() => { 
+    if (initialData && customerOptions.length) { 
+      // Convert date format if needed
+      const formattedDate = initialData.date ? new Date(initialData.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+      
+      setFormData({ 
+        ...initialData, 
+        date: formattedDate,
+        quoteDetails: initialData.quoteDetails || [] 
+      }); 
+      
+      const c = customerOptions.find(c => c.name === initialData.customer); 
+      if (c) setSelectedCustomer(c); 
+    } 
+  }, [initialData, customerOptions]);
+
+  const handleCustomerSelect = (_, nv) => { 
+    setSelectedCustomer(nv); 
+    setFormData(prev => ({ ...prev, customer: nv?.name || '', customerId: nv?.id || '' })); 
+  };
+
+  const handleWindowEntryChange = (f, v) => setWindowEntry(prev => ({ ...prev, [f]: v }));
+  
+  const focusNext = id => setTimeout(() => { 
+    const el = document.getElementById(id); 
+    if (el) el.focus(); 
+  }, 100);
+
+  const handleAddWindow = () => {
+    let updated;
+    if (editingIndex !== null) {
+      // Update existing window
+      updated = [...formData.quoteDetails];
+      updated[editingIndex] = { ...windowEntry };
+      setEditingIndex(null);
+    } else {
+      // Add new window
+      updated = [...formData.quoteDetails, { ...windowEntry }];
+    }
+    
+    const sum = updated.reduce((acc, d) => acc + (parseFloat(d.quantity) || 0) * (parseFloat(d.price) || 0), 0);
+    setFormData(prev => ({ ...prev, quoteDetails: updated, sub_total: +sum.toFixed(2), total: +sum.toFixed(2) }));
+    setWindowEntry({ material: "", product_line: "", product_type: "", CL: "", unit: '', width: '', height: '', at: '', GL: "", GRD: false, SC: "", quantity: '', price: '' });
+    focusNext("material");
+  };
+
+  const handleEditWindow = (index) => {
+    const windowToEdit = formData.quoteDetails[index];
+    setWindowEntry({
+      material: windowToEdit.material || "",
+      product_line: windowToEdit.product_line || "",
+      product_type: windowToEdit.product_type || "",
+      CL: windowToEdit.CL || "",
+      unit: windowToEdit.unit || '',
+      width: windowToEdit.width || '',
+      height: windowToEdit.height || '',
+      at: windowToEdit.at || '',
+      GL: windowToEdit.GL || "",
+      GRD: windowToEdit.GRD || false,
+      SC: windowToEdit.SC || "",
+      quantity: windowToEdit.quantity || '',
+      price: windowToEdit.price || ''
+    });
+    setEditingIndex(index);
+    focusNext("material");
+  };
+
+  const handleDeleteWindow = (index) => {
+    const updated = formData.quoteDetails.filter((_, i) => i !== index);
+    const sum = updated.reduce((acc, d) => acc + (parseFloat(d.quantity) || 0) * (parseFloat(d.price) || 0), 0);
+    setFormData(prev => ({ ...prev, quoteDetails: updated, sub_total: +sum.toFixed(2), total: +sum.toFixed(2) }));
+    
+    // Clear edit mode if we're deleting the item being edited
+    if (editingIndex === index) {
+      setEditingIndex(null);
+      setWindowEntry({ material: "", product_line: "", product_type: "", CL: "", unit: '', width: '', height: '', at: '', GL: "", GRD: false, SC: "", quantity: '', price: '' });
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingIndex(null);
+    setWindowEntry({ material: "", product_line: "", product_type: "", CL: "", unit: '', width: '', height: '', at: '', GL: "", GRD: false, SC: "", quantity: '', price: '' });
+  };
+
+  const handleSubmit = () => axios.post("/api/quotes", formData).then(() => navigate('/quotes')).catch(() => alert('Failed'));
+  const handleCancel = () => navigate('/quotes');
+
+  return (
+    <Box m={2}>
+      <Header 
+        title={(initialData?.duplicate ? 'Edit Quote' : 'Create New Quote') + (initialData?.quote_no ? ` - #${initialData.quote_no}` : '')} 
+        subtitle={initialData?.duplicate ? 'Creating a new version of an existing quote' : 'Enter quote details and window specifications'} 
+      />
+      
+      {/* Customer & Date */}
+      <Paper elevation={3} sx={{ p: 2, mb: 2 }}>
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} md={4}>
+            <Autocomplete 
+              options={customerOptions} 
+              getOptionLabel={o => o.name} 
+              value={selectedCustomer} 
+              onChange={handleCustomerSelect} 
+              renderInput={params => <TextField {...params} label="Select Customer" size="small" fullWidth required />} 
+            />
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <TextField 
+              fullWidth 
+              size="small" 
+              type="date" 
+              label="Quote Date" 
+              InputLabelProps={{ shrink: true }} 
+              value={formData.date} 
+              onChange={e => setFormData(prev => ({ ...prev, date: e.target.value }))} 
+            />
+          </Grid>
+          <Grid item xs={12} md={4}>
+            {selectedCustomer && <Typography variant="body2">ID: {selectedCustomer.id}</Typography>}
+          </Grid>
+        </Grid>
+      </Paper>
+
+      <Grid container spacing={2}>
+        {/* Entry Form */}
+        <Grid item xs={6} md={5}>
+          <Paper elevation={2} sx={{ p: 2 }}>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+              <Typography variant="h6">{editingIndex !== null ? 'Edit Window' : 'Add New Window'}</Typography>
+              {editingIndex !== null && (
+                <Button size="small" onClick={handleCancelEdit}>Cancel Edit</Button>
+              )}
+            </Box>
+            <Grid container spacing={1}>
+              <Grid item xs={12}>
+                <FormControl fullWidth size="small" sx={{ mb: 1 }}>
+                  <InputLabel>Material</InputLabel>
+                  <Select id="material" value={windowEntry.material} onChange={e => { handleWindowEntryChange('material', e.target.value); focusNext('productLine'); }} label="Material">
+                    {MATERIAL_OPTIONS.map(o => <MenuItem key={o} value={o}>{o}</MenuItem>)}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12}>
+                <FormControl fullWidth size="small" sx={{ mb: 1 }}>
+                  <InputLabel>Product Line</InputLabel>
+                  <Select id="productLine" value={windowEntry.product_line} onChange={e => { handleWindowEntryChange('product_line', e.target.value); focusNext('productType'); }} label="Product Line">
+                    {PRODUCT_LINE_OPTIONS.map(o => <MenuItem key={o} value={o}>{o}</MenuItem>)}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12}>
+                <FormControl fullWidth size="small" sx={{ mb: 1 }}>
+                  <InputLabel>Product Type</InputLabel>
+                  <Select id="productType" value={windowEntry.product_type} onChange={e => { handleWindowEntryChange('product_type', e.target.value); focusNext('color'); }} label="Product Type">
+                    {PRODUCT_TYPE_OPTIONS.map(o => <MenuItem key={o} value={o}>{o}</MenuItem>)}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12}>
+                <FormControl fullWidth size="small" sx={{ mb: 1 }}>
+                  <InputLabel>Color (CL)</InputLabel>
+                  <Select id="color" value={windowEntry.CL} onChange={e => { handleWindowEntryChange('CL', e.target.value); focusNext('width'); }} label="Color (CL)">
+                    {CL_OPTIONS.map(o => <MenuItem key={o} value={o}>{o}</MenuItem>)}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={6}>
+                <TextField fullWidth size="small" label="Width (in)" type="number" sx={{ mb: 1 }} id="width" value={windowEntry.width} onChange={e => { handleWindowEntryChange('width', e.target.value);}} onKeyDown={k => {if(k.key==='Enter'){focusNext('height');}}}/>
+              </Grid>
+              <Grid item xs={6}>
+                <TextField fullWidth size="small" label="Height (in)" type="number" sx={{ mb: 1 }} id="height" value={windowEntry.height} onChange={e => { handleWindowEntryChange('height', e.target.value);}} onKeyDown={k => {if(k.key==='Enter'){focusNext('glass');}}}/>
+              </Grid>
+              <Grid item xs={12}>
+                <FormControl fullWidth size="small" sx={{ mb: 1 }}>
+                  <InputLabel>Glass (GL)</InputLabel>
+                  <Select id="glass" value={windowEntry.GL} onChange={e => { handleWindowEntryChange('GL', e.target.value); focusNext('screen'); }} label="Glass (GL)">
+                    {GL_OPTIONS.map(o => <MenuItem key={o} value={o}>{o}</MenuItem>)}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12}>
+                <FormControl fullWidth size="small" sx={{ mb: 1 }}>
+                  <InputLabel>Screen (SC)</InputLabel>
+                  <Select id="screen" value={windowEntry.SC} onChange={e => { handleWindowEntryChange('SC', e.target.value); focusNext('quantity'); }} label="Screen (SC)">
+                    {SC_OPTIONS.map(o => <MenuItem key={o} value={o}>{o}</MenuItem>)}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12}>
+                <FormControlLabel control={<Switch size="small" checked={windowEntry.GRD} onChange={e => handleWindowEntryChange('GRD', e.target.checked)} />} label="Grids?" sx={{ mb: 1 }} />
+              </Grid>
+              <Grid item xs={6}>
+                <TextField fullWidth size="small" label="Quantity" type="number" sx={{ mb: 1 }} id="quantity" value={windowEntry.quantity} onChange={e => { handleWindowEntryChange('quantity', e.target.value); }} onKeyDown={k => {if(k.key==='Enter'){focusNext('price');}}}/>
+              </Grid>
+              <Grid item xs={6}>
+                <TextField fullWidth size="small" label="Unit Price" type="number" sx={{ mb: 1 }} id="price" value={windowEntry.price} onChange={e => { handleWindowEntryChange('price', e.target.value); }} />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField fullWidth size="small" label="Line Total" sx={{ mb: 2 }} id="lineTotal" value={`$${((windowEntry.quantity||0)*(windowEntry.price||0)).toFixed(2)}`} InputProps={{ readOnly: true }} />
+              </Grid>
+              <Grid item xs={12}>
+                <Button fullWidth size="small" variant="contained" id="createWindow" onClick={handleAddWindow}>
+                  {editingIndex !== null ? 'Update Window' : 'Create Window'}
+                </Button>
+              </Grid>
+            </Grid>
+          </Paper>
+        </Grid>
+        
+        {/* Summary with image on side */}
+        <Grid item xs={12} md={7}>
+          <Paper elevation={2} sx={{ p: 2, height: 'calc(100vh - 260px)', overflowY: 'auto' }}>
+            <Typography variant="h6" mb={1}>Windows Added</Typography>
+            {formData.quoteDetails.map((detail, idx) => (
+              <Card key={idx} sx={{ mb: 1, p: 1, backgroundColor: editingIndex === idx ? 'action.selected' : 'inherit' }}>
+                <Grid container spacing={1} alignItems="center">
+                  <Grid item>
+                    <WindowImage detail={detail} />
+                  </Grid>
+                  <Grid item xs>
+                    <Typography variant="subtitle2" fontWeight="bold">Window #{idx+1}</Typography>
+                    <Grid container spacing={0.5}>
+                      <Grid item xs={6}><Typography variant="body2"><strong>Product Line:</strong> {detail.product_line}</Typography></Grid>
+                      <Grid item xs={6}><Typography variant="body2"><strong>Type:</strong> {detail.product_type}</Typography></Grid>
+                      <Grid item xs={6}><Typography variant="body2"><strong>Material:</strong> {detail.material}</Typography></Grid>
+                      <Grid item xs={6}><Typography variant="body2"><strong>Color:</strong> {detail.CL}</Typography></Grid>
+                      <Grid item xs={6}><Typography variant="body2"><strong>Glass:</strong> {detail.GL}</Typography></Grid>
+                      <Grid item xs={6}><Typography variant="body2"><strong>Size:</strong> {detail.width}"×{detail.height}"</Typography></Grid>
+                      <Grid item xs={6}><Typography variant="body2"><strong>Screen:</strong> {detail.SC}</Typography></Grid>
+                      <Grid item xs={6}><Typography variant="body2"><strong>Qty:</strong> {detail.quantity}</Typography></Grid>
+                      <Grid item xs={6}><Typography variant="body2"><strong>Unit Price:</strong> ${detail.price}</Typography></Grid>
+                      {detail.GRD && <Grid item xs={12}><Typography variant="body2"><strong>Grids:</strong> Yes</Typography></Grid>}
+                    </Grid>
+                    <Divider sx={{ my: 0.5 }} />
+                    <Box display="flex" justifyContent="space-between" alignItems="center">
+                      <Typography><strong>Subtotal: ${(detail.quantity * detail.price).toFixed(2)}</strong></Typography>
+                      <Box>
+                        <IconButton size="small" onClick={() => handleEditWindow(idx)} color="primary">
+                          <EditIcon />
+                        </IconButton>
+                        <IconButton size="small" onClick={() => handleDeleteWindow(idx)} color="error">
+                          <DeleteIcon />
+                        </IconButton>
+                      </Box>
+                    </Box>
+                  </Grid>
+                </Grid>
+              </Card>
+            ))}
+            <Card sx={{ mt: 2, p: 1, backgroundColor: 'primary.dark' }}>
+              <Typography variant="h6" color="white">Quote Totals</Typography>
+              <Typography variant="h4" color="white">${formData.total.toFixed(2)}</Typography>
+            </Card>
+            <Box display="flex" gap={1} mt={2}>
+              <Button fullWidth size="small" variant="contained" color="primary" onClick={handleSubmit}>
+                {initialData?.duplicate ? 'Update Quote' : 'Create Quote'}
+              </Button>
+              <Button fullWidth size="small" variant="outlined" onClick={handleCancel}>Cancel</Button>
+            </Box>
+          </Paper>
+        </Grid>
+      </Grid>
+    </Box>
+  );
+};
+
+export default CreateQuotePage;

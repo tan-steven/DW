@@ -21,14 +21,14 @@ module.exports = {
       material: {
         type: Sequelize.STRING
       },
+      product_line: {
+        type: Sequelize.STRING
+      },
       product_type: {
         type: Sequelize.STRING
       },
       CL: {
         type: Sequelize.STRING
-      },
-      unit: {
-        type: Sequelize.INTEGER
       },
       width: {
         type: Sequelize.DOUBLE
@@ -36,14 +36,11 @@ module.exports = {
       height: {
         type: Sequelize.DOUBLE
       },
-      at: {
-        type: Sequelize.INTEGER
-      },
       GL: {
         type: Sequelize.STRING
       },
       GRD: {
-        type: Sequelize.BOOLEAN
+        type: Sequelize.STRING
       },
       SC: {
         type: Sequelize.STRING
@@ -52,7 +49,7 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       price: {
-        type: Sequelize.INTEGER
+        type: Sequelize.DOUBLE
       }
     });
   },

@@ -20,10 +20,10 @@ module.exports = {
         type: Sequelize.STRING
       },
       sub_total: {
-        type: Sequelize.DECIMAL
+        type: Sequelize.DOUBLE
       },
       total: {
-        type: Sequelize.DECIMAL
+        type: Sequelize.DOUBLE
       },
     });
   },

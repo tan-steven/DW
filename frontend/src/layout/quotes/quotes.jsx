@@ -3,13 +3,14 @@ import { DataGrid } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
 import Header from "../../components/header";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "../../utils/axiosConfig";
-import CreateQuote from "./createQuote";
 import QuoteDetails from "./quoteDetails";
 
 const Quotes = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const navigate = useNavigate();
 
   const [quotes, setQuotes] = useState([]);
   const [selectedQuote, setSelectedQuote] = useState(null);
@@ -20,6 +21,10 @@ const Quotes = () => {
     const found = quotes.find(q => q.quote_no === quote_no);
     setSelectedQuote(found);
     setModalOpen(true);
+  };
+
+  const handleCreateQuote = () => {
+    navigate("/quotes/create");
   };
 
   const handleSubmitAsOrder = async () => {
@@ -60,7 +65,6 @@ const Quotes = () => {
     fetchQuotes();
   }, []);
 
-
   const columns = [
     {
       field: "quote_no",
@@ -69,18 +73,18 @@ const Quotes = () => {
     },
     {
       field: "date",
-      headerName: "date",
+      headerName: "Date",
       flex: 1,
       cellClassName: "name-column--cell",
     },
     {
       field: "customer",
-      headerName: "customer",
+      headerName: "Customer",
       flex: 1,
     },
     {
       field: "total",
-      headerName: "total",
+      headerName: "Total",
       flex: 1,
       renderCell: (params) => (
         <Typography color={colors.greenAccent[500]}>
@@ -89,8 +93,8 @@ const Quotes = () => {
       ),
     },
     {
-      field: "sub total",
-      headerName: "sub total",
+      field: "sub_total",
+      headerName: "Sub Total",
       flex: 1,
       renderCell: (params) => (
         <Typography color={colors.greenAccent[500]}>
@@ -161,7 +165,13 @@ const Quotes = () => {
         }}
       >
         <Box display="flex" justifyContent="space-between" mb={2} gap={2}>
-          <CreateQuote onQuoteCreated={() => window.location.reload()} />
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={handleCreateQuote}
+          >
+            Add New Quote
+          </Button>
           <Button
             variant="contained"
             color="secondary"
