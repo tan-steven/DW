@@ -16,7 +16,6 @@ import {
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../../utils/axiosConfig";
-import { formatQuoteNumber } from "../../utils/quoteNum";
 
 // Frame color mappings
 const FRAME_COLORS = {
@@ -47,25 +46,47 @@ const WindowImage = ({ detail }) => {
   const frameColor = FRAME_COLORS[detail.CL] || FRAME_COLORS['Custom Color'];
   const glassColor = GLASS_COLORS[detail.GL] || GLASS_COLORS['Clear'];
   
+  // Get dimensions and calculate aspect ratio
+  const width = parseFloat(detail.width) || 36;
+  const height = parseFloat(detail.height) || 48;
+  const maxDimension = Math.max(width, height);
+  const scale = 50 / maxDimension; // Scale to fit within 50px max for the table view
+  
+  const displayWidth = width * scale;
+  const displayHeight = height * scale;
+  
+  // Center the window in a 60x60 container
+  const offsetX = (60 - displayWidth) / 2;
+  const offsetY = (60 - displayHeight) / 2;
+  
   return (
-    <Box sx={{ width: 60, height: 60, flexShrink: 0 }}>
-      <svg width="100%" height="100%" viewBox="0 0 100 100">
-        <rect x="0" y="0" width="100" height="100" fill="none" stroke={frameColor} strokeWidth="6" />
-        <rect x="8" y="8" width="84" height="84" fill={glassColor} />
+    <Box sx={{ width: 60, height: 60, flexShrink: 0, position: 'relative' }}>
+      <svg width="100%" height="100%" viewBox="0 0 60 60">
+        {/* Window frame and glass */}
+        <rect x={offsetX} y={offsetY} width={displayWidth} height={displayHeight} fill="none" stroke={frameColor} strokeWidth="2" />
+        <rect x={offsetX + 2} y={offsetY + 2} width={displayWidth - 4} height={displayHeight - 4} fill={glassColor} />
+        
+        {/* Window type specific elements */}
         {detail.product_type === 'Double Hung' && (
-          <line x1="0" y1="50" x2="100" y2="50" stroke={frameColor} strokeWidth="3" />
+          <line x1={offsetX} y1={offsetY + displayHeight/2} x2={offsetX + displayWidth} y2={offsetY + displayHeight/2} stroke={frameColor} strokeWidth="1.5" />
         )}
         {detail.product_type === 'Sliding' && (
-          <line x1="50" y1="0" x2="50" y2="100" stroke={frameColor} strokeWidth="3" />
+          <line x1={offsetX + displayWidth/2} y1={offsetY} x2={offsetX + displayWidth/2} y2={offsetY + displayHeight} stroke={frameColor} strokeWidth="1.5" />
         )}
+        
+        {/* Grids */}
         {detail.GRD && (
           <>
-            <line x1="33" y1="8" x2="33" y2="92" stroke={frameColor} strokeWidth="1" />
-            <line x1="66" y1="8" x2="66" y2="92" stroke={frameColor} strokeWidth="1" />
-            <line x1="8" y1="33" x2="92" y2="33" stroke={frameColor} strokeWidth="1" />
-            <line x1="8" y1="66" x2="92" y2="66" stroke={frameColor} strokeWidth="1" />
+            <line x1={offsetX + displayWidth/3} y1={offsetY + 2} x2={offsetX + displayWidth/3} y2={offsetY + displayHeight - 2} stroke={frameColor} strokeWidth="0.5" opacity="0.7" />
+            <line x1={offsetX + 2*displayWidth/3} y1={offsetY + 2} x2={offsetX + 2*displayWidth/3} y2={offsetY + displayHeight - 2} stroke={frameColor} strokeWidth="0.5" opacity="0.7" />
+            <line x1={offsetX + 2} y1={offsetY + displayHeight/3} x2={offsetX + displayWidth - 2} y2={offsetY + displayHeight/3} stroke={frameColor} strokeWidth="0.5" opacity="0.7" />
+            <line x1={offsetX + 2} y1={offsetY + 2*displayHeight/3} x2={offsetX + displayWidth - 2} y2={offsetY + 2*displayHeight/3} stroke={frameColor} strokeWidth="0.5" opacity="0.7" />
           </>
         )}
+        
+        {/* Dimension labels - smaller for table view */}
+        <text x="30" y="8" textAnchor="middle" fontSize="7" fill="#666">{width}"</text>
+        <text x="8" y="30" textAnchor="middle" fontSize="7" fill="#666" transform="rotate(-90 8 30)">{height}"</text>
       </svg>
     </Box>
   );
@@ -73,16 +94,39 @@ const WindowImage = ({ detail }) => {
 
 const QuoteDetails = ({ open, onClose, quote }) => {
   const [details, setDetails] = useState([]);
+  const [customer, setCustomer] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     if (quote?.quote_no && open) {
+      // Get quote details
       axios
         .get(`/api/quotes/${quote.quote_no}`)
         .then((res) => setDetails(res.data))
         .catch((err) =>
           console.error("Error fetching quote details", err)
         );
+      
+      // Extract customer ID from quote number and fetch customer details
+      const quoteStr = quote.quote_no.toString();
+      let customerId;
+      
+      // Extract customer ID based on quote number pattern
+      if (quoteStr.length >= 7) {
+        // For quote numbers like 10000100 or 120000100
+        const customerPart = quoteStr.substring(0, quoteStr.length - 7);
+        customerId = parseInt(customerPart);
+      }
+      
+      if (customerId) {
+        axios
+          .get(`/api/customers`)
+          .then((res) => {
+            const customerData = res.data.find(c => c.id == customerId);
+            setCustomer(customerData);
+          })
+          .catch((err) => console.error("Error fetching customer", err));
+      }
     }
   }, [quote, open]);
 
@@ -132,7 +176,7 @@ const QuoteDetails = ({ open, onClose, quote }) => {
             QUOTE
           </Typography>
           <Typography variant="h6" sx={{ color: 'text.secondary' }}>
-            {quote?.quote_no ? formatQuoteNumber(quote?.quote_no) : "loading..."}
+            #{quote?.quote_no || "loading..."}
           </Typography>
         </Box>
 
@@ -141,19 +185,39 @@ const QuoteDetails = ({ open, onClose, quote }) => {
         {/* Quote Information */}
         {quote && (
           <Grid container spacing={3} sx={{ mb: 3 }}>
-            <Grid item xs={6}>
-              <Typography variant="subtitle2" color="text.secondary">
+            <Grid item xs={12} md={6}>
+              <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
                 BILL TO
               </Typography>
-              <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                {quote.customer}
-              </Typography>
+              <Box>
+                <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                  {customer?.name || quote.customer}
+                </Typography>
+                {customer && (
+                  <>
+                    {customer.company && (
+                      <Typography variant="body2" sx={{ mt: 0.5 }}>
+                        {customer.company}
+                      </Typography>
+                    )}
+                    <Typography variant="body2" sx={{ mt: 0.5 }}>
+                      {customer.address}
+                    </Typography>
+                    <Typography variant="body2" sx={{ mt: 0.5 }}>
+                      {customer.phone}
+                    </Typography>
+                    <Typography variant="body2" sx={{ mt: 0.5 }}>
+                      {customer.email}
+                    </Typography>
+                  </>
+                )}
+              </Box>
             </Grid>
-            <Grid item xs={6} sx={{ textAlign: 'right' }}>
-              <Typography variant="subtitle2" color="text.secondary">
+            <Grid item xs={12} md={6} sx={{ textAlign: { xs: 'left', md: 'right' } }}>
+              <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
                 QUOTE DATE
               </Typography>
-              <Typography variant="h6">
+              <Typography variant="h6" sx={{ mb: 1 }}>
                 {formatDate(quote.date)}
               </Typography>
             </Grid>
@@ -186,14 +250,11 @@ const QuoteDetails = ({ open, onClose, quote }) => {
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                         <WindowImage detail={item} />
                         <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                          Window #{index + 1}
+                          {item.product_line}
                         </Typography>
                       </Box>
                     </TableCell>
                     <TableCell>
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                        {item.product_line}
-                      </Typography>
                       <Typography variant="body2" sx={{ fontWeight: 500 }}>
                         {item.product_type} - {item.material}
                       </Typography>

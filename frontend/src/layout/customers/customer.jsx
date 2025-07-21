@@ -22,6 +22,7 @@ const CustomerPage = () => {
   const [customers, setCustomers] = useState([]);
   const [formData, setFormData] = useState({
     id: "",
+    company: "",
     name: "",
     phone: "",
     address: "",
@@ -62,6 +63,13 @@ const CustomerPage = () => {
         mb="20px"
       >
         <TextField
+          label="Company"
+          variant="outlined"
+          name="company"
+          value={formData.company}
+          onChange={handleChange}
+        />
+        <TextField
           label="Name"
           variant="outlined"
           name="name"
@@ -100,6 +108,7 @@ const CustomerPage = () => {
         <Table>
           <TableHead>
             <TableRow>
+              <TableCell>Company</TableCell>
               <TableCell>Name</TableCell>
               <TableCell>Phone</TableCell>
               <TableCell>Address</TableCell>
@@ -109,6 +118,7 @@ const CustomerPage = () => {
           <TableBody>
             {customers.map((customer, index) => (
               <TableRow key={index}>
+                <TableCell>{customer.company}</TableCell>
                 <TableCell>{customer.name}</TableCell>
                 <TableCell>{customer.phone}</TableCell>
                 <TableCell>{customer.address}</TableCell>

@@ -21,6 +21,7 @@ const CL_OPTIONS = ["White", "Black", "Bronze", "Silver", "Beige", "Brown", "Cus
 const GL_OPTIONS = ["Clear", "Low-E", "Tempered", "Laminated", "Tinted Bronze", "Tinted Gray", "Frosted", "Double Pane", "Triple Pane"];
 const SC_OPTIONS = ["Half Screen", "Full Screen", "No Screen", "Retractable Screen"];
 const PRODUCT_LINE_OPTIONS = ["1000 Series", "4000 Series", "5000 Series", "6000 Series", "7000 Series", "8000 Series", "9000 Series"];
+const GRID_OPTIONS = ["Traditional", "9-Lite", "12-Lite", "14-Lite", "Top Row", "Cross", "false"];
 
 const FRAME_COLORS = {
   White: '#FFFFFF', Black: '#000000', Bronze: '#CD7F32', Silver: '#C0C0C0',
@@ -36,13 +37,48 @@ const GLASS_COLORS = {
 const WindowImage = ({ detail }) => {
   const frameColor = FRAME_COLORS[detail.CL] || FRAME_COLORS['Custom Color'];
   const glassColor = GLASS_COLORS[detail.GL] || GLASS_COLORS['Clear'];
+  
+  // Get dimensions and calculate aspect ratio
+  const width = parseFloat(detail.width) || 36;
+  const height = parseFloat(detail.height) || 48;
+  const maxDimension = Math.max(width, height);
+  const scale = 80 / maxDimension; // Scale to fit within 80px max
+  
+  const displayWidth = width * scale;
+  const displayHeight = height * scale;
+  
+  // Center the window in a 100x100 container
+  const offsetX = (100 - displayWidth) / 2;
+  const offsetY = (100 - displayHeight) / 2;
+  
   return (
-    <Box sx={{ width: 100, height: 100, flexShrink: 0 }}>
+    <Box sx={{ width: 100, height: 100, flexShrink: 0, position: 'relative' }}>
       <svg width="100%" height="100%" viewBox="0 0 100 100">
-        <rect x="0" y="0" width="100" height="100" fill="none" stroke={frameColor} strokeWidth="6" />
-        <rect x="8" y="8" width="84" height="84" fill={glassColor} />
-        {detail.product_type === 'Double Hung' && <line x1="0" y1="50" x2="100" y2="50" stroke={frameColor} strokeWidth="3" />}
-        {detail.product_type === 'Sliding' && <line x1="50" y1="0" x2="50" y2="100" stroke={frameColor} strokeWidth="3" />}
+        {/* Window frame and glass */}
+        <rect x={offsetX} y={offsetY} width={displayWidth} height={displayHeight} fill="none" stroke={frameColor} strokeWidth="3" />
+        <rect x={offsetX + 3} y={offsetY + 3} width={displayWidth - 6} height={displayHeight - 6} fill={glassColor} />
+        
+        {/* Window type specific elements */}
+        {detail.product_type === 'Double Hung' && (
+          <line x1={offsetX} y1={offsetY + displayHeight/2} x2={offsetX + displayWidth} y2={offsetY + displayHeight/2} stroke={frameColor} strokeWidth="2" />
+        )}
+        {detail.product_type === 'Sliding' && (
+          <line x1={offsetX + displayWidth/2} y1={offsetY} x2={offsetX + displayWidth/2} y2={offsetY + displayHeight} stroke={frameColor} strokeWidth="2" />
+        )}
+        
+        {/* Grids */}
+        {detail.GRD && (
+          <>
+            <line x1={offsetX + displayWidth/3} y1={offsetY + 3} x2={offsetX + displayWidth/3} y2={offsetY + displayHeight - 3} stroke={frameColor} strokeWidth="1" opacity="0.7" />
+            <line x1={offsetX + 2*displayWidth/3} y1={offsetY + 3} x2={offsetX + 2*displayWidth/3} y2={offsetY + displayHeight - 3} stroke={frameColor} strokeWidth="1" opacity="0.7" />
+            <line x1={offsetX + 3} y1={offsetY + displayHeight/3} x2={offsetX + displayWidth - 3} y2={offsetY + displayHeight/3} stroke={frameColor} strokeWidth="1" opacity="0.7" />
+            <line x1={offsetX + 3} y1={offsetY + 2*displayHeight/3} x2={offsetX + displayWidth - 3} y2={offsetY + 2*displayHeight/3} stroke={frameColor} strokeWidth="1" opacity="0.7" />
+          </>
+        )}
+        
+        {/* Dimension labels */}
+        <text x="50" y="10" textAnchor="middle" fontSize="10" fill="#666">{width}"</text>
+        <text x="10" y="50" textAnchor="middle" fontSize="10" fill="#666" transform="rotate(-90 10 50)">{height}"</text>
       </svg>
     </Box>
   );
@@ -159,7 +195,7 @@ const CreateQuotePage = () => {
       
       {/* Customer & Date */}
       <Paper elevation={3} sx={{ p: 2, mb: 2 }}>
-        <Grid container spacing={2} alignItems="center">
+        <Grid container spacing={2}>
           <Grid item xs={12} md={4}>
             <Autocomplete 
               options={customerOptions} 
@@ -180,9 +216,24 @@ const CreateQuotePage = () => {
               onChange={e => setFormData(prev => ({ ...prev, date: e.target.value }))} 
             />
           </Grid>
-          <Grid item xs={12} md={4}>
-            {selectedCustomer && <Typography variant="body2">ID: {selectedCustomer.id}</Typography>}
-          </Grid>
+          {selectedCustomer && (
+            <>
+              <Grid item xs={12}>
+                <Divider sx={{ my: 1 }} />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Typography variant="subtitle2" color="text.secondary">Customer Information</Typography>
+                <Typography variant="body2"><strong>Name:</strong> {selectedCustomer.name}</Typography>
+                {selectedCustomer.company && <Typography variant="body2"><strong>Company:</strong> {selectedCustomer.company}</Typography>}
+                <Typography variant="body2"><strong>Email:</strong> {selectedCustomer.email}</Typography>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Typography variant="subtitle2" color="text.secondary">&nbsp;</Typography>
+                <Typography variant="body2"><strong>Phone:</strong> {selectedCustomer.phone}</Typography>
+                <Typography variant="body2"><strong>Address:</strong> {selectedCustomer.address}</Typography>
+              </Grid>
+            </>
+          )}
         </Grid>
       </Paper>
 
@@ -240,12 +291,17 @@ const CreateQuotePage = () => {
 
               <FormControl fullWidth size="small">
                 <InputLabel>Screen (SC)</InputLabel>
-                <Select id="screen" value={windowEntry.SC} onChange={e => { handleWindowEntryChange('SC', e.target.value); focusNext('quantity'); }} label="Screen (SC)">
+                <Select id="screen" value={windowEntry.SC} onChange={e => { handleWindowEntryChange('SC', e.target.value); focusNext('grid'); }} label="Screen (SC)">
                   {SC_OPTIONS.map(o => <MenuItem key={o} value={o}>{o}</MenuItem>)}
                 </Select>
               </FormControl>
 
-              <FormControlLabel control={<Switch size="small" checked={windowEntry.GRD} onChange={e => handleWindowEntryChange('GRD', e.target.checked)} />} label="Grids?" />
+              <FormControl fullWidth size="small">
+                <InputLabel>Grid</InputLabel>
+                <Select id="grid" value={windowEntry.SC} onChange={e => { handleWindowEntryChange('grid', e.target.value); focusNext('quantity'); }} label="Grid">
+                  {GRID_OPTIONS.map(o => <MenuItem key={o} value={o}>{o}</MenuItem>)}
+                </Select>
+              </FormControl>
 
               <Box display="flex" gap={1}>
                 <TextField fullWidth size="small" label="Quantity" type="number" id="quantity" value={windowEntry.quantity} onChange={e => { handleWindowEntryChange('quantity', e.target.value); }} onKeyDown={k => {if(k.key==='Enter'){focusNext('price');}}}/>

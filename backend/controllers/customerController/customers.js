@@ -17,8 +17,8 @@ customerRoute.get('/', async (req, res) => {
 // Create a new customer
 customerRoute.post('/', async (req, res) => {
   try {
-    const { name, phone, address, email } = req.body;
-    const newCustomer = await Customer.create({ name, phone, address, email });
+    const { company, name, phone, address, email } = req.body;
+    const newCustomer = await Customer.create({ company, name, phone, address, email });
     res.status(201).json(newCustomer);
   } catch (error) {
     console.error(error);
