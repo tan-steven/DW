@@ -30,6 +30,6 @@ app.use('/api/deliveries', deliveries);
 app.use('/api/formulas', formulas);
 
 const port = process.env.PORT || 4000;
-app.listen(port, () => {
-  console.log(`server is running on port ${port}`);
+app.listen(port , '0.0.0.0', () => {
+  console.log(`server is running on ${port}`);
 });

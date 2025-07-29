@@ -252,6 +252,9 @@ const QuoteDetails = ({ open, onClose, quote }) => {
                         <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
                           {item.product_line}
                         </Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                          {item.fit}
+                        </Typography>
                       </Box>
                     </TableCell>
                     <TableCell>
@@ -263,7 +266,7 @@ const QuoteDetails = ({ open, onClose, quote }) => {
                       </Typography>
                       <br />
                       <Typography variant="caption" color="text.secondary">
-                        {item.SC} {item.GRD && '• Grids'}
+                        {item.SC} • {item.GRD} Grid
                       </Typography>
                     </TableCell>
                     <TableCell align="center">{item.quantity}</TableCell>

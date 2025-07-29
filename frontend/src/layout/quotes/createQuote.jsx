@@ -22,6 +22,7 @@ const GL_OPTIONS = ["Clear", "Low-E", "Tempered", "Laminated", "Tinted Bronze", 
 const SC_OPTIONS = ["Half Screen", "Full Screen", "No Screen", "Retractable Screen"];
 const PRODUCT_LINE_OPTIONS = ["1000 Series", "4000 Series", "5000 Series", "6000 Series", "7000 Series", "8000 Series", "9000 Series"];
 const GRID_OPTIONS = ["Traditional", "9-Lite", "12-Lite", "14-Lite", "Top Row", "Cross", "false"];
+const FIT_OPTIONS = ["Exact Size", "Rough Openning"];
 
 const FRAME_COLORS = {
   White: '#FFFFFF', Black: '#000000', Bronze: '#CD7F32', Silver: '#C0C0C0',
@@ -92,7 +93,7 @@ const CreateQuotePage = () => {
   const [customerOptions, setCustomerOptions] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [formData, setFormData] = useState({ date: new Date().toISOString().split('T')[0], customer: "", total: 0, sub_total: 0, quoteDetails: [] });
-  const [windowEntry, setWindowEntry] = useState({ material: "", product_line: "", product_type: "", CL: "", unit: '', width: '', height: '', at: '', GL: "", GRD: false, SC: "", quantity: '', price: '' });
+  const [windowEntry, setWindowEntry] = useState({ material: "", product_line: "", product_type: "", CL: "", unit: '', width: '', height: '', fit: '', at: '', GL: "", GRD: "", SC: "", quantity: '', price: '' });
   const [editingIndex, setEditingIndex] = useState(null);
 
   useEffect(() => { 
@@ -141,7 +142,7 @@ const CreateQuotePage = () => {
     
     const sum = updated.reduce((acc, d) => acc + (parseFloat(d.quantity) || 0) * (parseFloat(d.price) || 0), 0);
     setFormData(prev => ({ ...prev, quoteDetails: updated, sub_total: +sum.toFixed(2), total: +sum.toFixed(2) }));
-    setWindowEntry({ material: "", product_line: "", product_type: "", CL: "", unit: '', width: '', height: '', at: '', GL: "", GRD: false, SC: "", quantity: '', price: '' });
+    setWindowEntry({ material: "", product_line: "", product_type: "", CL: "", unit: '', width: '', height: '', fit: '', at: '', GL: "", GRD: "", SC: "", quantity: '', price: '' });
     focusNext("material");
   };
 
@@ -155,9 +156,10 @@ const CreateQuotePage = () => {
       unit: windowToEdit.unit || '',
       width: windowToEdit.width || '',
       height: windowToEdit.height || '',
+      fit: windowToEdit.fit || '',
       at: windowToEdit.at || '',
       GL: windowToEdit.GL || "",
-      GRD: windowToEdit.GRD || false,
+      GRD: windowToEdit.GRD || "",
       SC: windowToEdit.SC || "",
       quantity: windowToEdit.quantity || '',
       price: windowToEdit.price || ''
@@ -174,13 +176,13 @@ const CreateQuotePage = () => {
     // Clear edit mode if we're deleting the item being edited
     if (editingIndex === index) {
       setEditingIndex(null);
-      setWindowEntry({ material: "", product_line: "", product_type: "", CL: "", unit: '', width: '', height: '', at: '', GL: "", GRD: false, SC: "", quantity: '', price: '' });
+      setWindowEntry({ material: "", product_line: "", product_type: "", CL: "", unit: '', width: '', height: '', fit: '', at: '', GL: "", GRD: "", SC: "", quantity: '', price: '' });
     }
   };
 
   const handleCancelEdit = () => {
     setEditingIndex(null);
-    setWindowEntry({ material: "", product_line: "", product_type: "", CL: "", unit: '', width: '', height: '', at: '', GL: "", GRD: false, SC: "", quantity: '', price: '' });
+    setWindowEntry({ material: "", product_line: "", product_type: "", CL: "", unit: '', width: '', height: '', fit: '', at: '', GL: "", GRD: "", SC: "", quantity: '', price: '' });
   };
 
   const handleSubmit = () => axios.post("/api/quotes", formData).then(() => navigate('/quotes')).catch(() => alert('Failed'));
@@ -279,8 +281,15 @@ const CreateQuotePage = () => {
 
               <Box display="flex" gap={1}>
                 <TextField fullWidth size="small" label="Width (in)" type="number" id="width" value={windowEntry.width} onChange={e => { handleWindowEntryChange('width', e.target.value);}} onKeyDown={k => {if(k.key==='Enter'){focusNext('height');}}}/>
-                <TextField fullWidth size="small" label="Height (in)" type="number" id="height" value={windowEntry.height} onChange={e => { handleWindowEntryChange('height', e.target.value);}} onKeyDown={k => {if(k.key==='Enter'){focusNext('glass');}}}/>
+                <TextField fullWidth size="small" label="Height (in)" type="number" id="height" value={windowEntry.height} onChange={e => { handleWindowEntryChange('height', e.target.value);}} onKeyDown={k => {if(k.key==='Enter'){focusNext('fit');}}}/>
               </Box>
+
+              <FormControl fullWidth size="small">
+                <InputLabel>Fit</InputLabel>
+                <Select id="fit" value={windowEntry.fit} onChange={e => { handleWindowEntryChange('fit', e.target.value); focusNext('glass'); }} label="Fit">
+                  {FIT_OPTIONS.map(o => <MenuItem key={o} value={o}>{o}</MenuItem>)}
+                </Select>
+              </FormControl>
 
               <FormControl fullWidth size="small">
                 <InputLabel>Glass (GL)</InputLabel>
@@ -298,7 +307,7 @@ const CreateQuotePage = () => {
 
               <FormControl fullWidth size="small">
                 <InputLabel>Grid</InputLabel>
-                <Select id="grid" value={windowEntry.SC} onChange={e => { handleWindowEntryChange('grid', e.target.value); focusNext('quantity'); }} label="Grid">
+                <Select id="grid" value={windowEntry.GRD} onChange={e => { handleWindowEntryChange('GRD', e.target.value); focusNext('quantity'); }} label="grid">
                   {GRID_OPTIONS.map(o => <MenuItem key={o} value={o}>{o}</MenuItem>)}
                 </Select>
               </FormControl>
@@ -336,10 +345,11 @@ const CreateQuotePage = () => {
                       <Grid item xs={6}><Typography variant="body2"><strong>Color:</strong> {detail.CL}</Typography></Grid>
                       <Grid item xs={6}><Typography variant="body2"><strong>Glass:</strong> {detail.GL}</Typography></Grid>
                       <Grid item xs={6}><Typography variant="body2"><strong>Size:</strong> {detail.width}"×{detail.height}"</Typography></Grid>
+                      <Grid item xs={6}><Typography variant="body2"><strong>Fit:</strong> {detail.fit}</Typography></Grid>
                       <Grid item xs={6}><Typography variant="body2"><strong>Screen:</strong> {detail.SC}</Typography></Grid>
+                      <Grid item xs={6}><Typography variant="body2"><strong>Grid:</strong> {detail.GRD}</Typography></Grid>
                       <Grid item xs={6}><Typography variant="body2"><strong>Qty:</strong> {detail.quantity}</Typography></Grid>
                       <Grid item xs={6}><Typography variant="body2"><strong>Unit Price:</strong> ${detail.price}</Typography></Grid>
-                      {detail.GRD && <Grid item xs={12}><Typography variant="body2"><strong>Grids:</strong> Yes</Typography></Grid>}
                     </Grid>
                     <Divider sx={{ my: 0.5 }} />
                     <Box display="flex" justifyContent="space-between" alignItems="center">

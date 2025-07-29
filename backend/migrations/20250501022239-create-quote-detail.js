@@ -39,6 +39,9 @@ module.exports = {
       height: {
         type: Sequelize.DOUBLE
       },
+      fit: {
+        type: Sequelize.STRING
+      },
       GL: {
         type: Sequelize.STRING
       },

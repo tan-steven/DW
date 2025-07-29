@@ -21,6 +21,7 @@ module.exports = (sequelize, DataTypes) => {
     CL: DataTypes.STRING,
     width: DataTypes.DOUBLE,
     height: DataTypes.DOUBLE,
+    fit: DataTypes.STRING,
     GL: DataTypes.STRING,
     GRD: DataTypes.STRING,
     SC: DataTypes.STRING,
